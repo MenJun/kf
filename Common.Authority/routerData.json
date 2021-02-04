@@ -1,0 +1,431 @@
+﻿{
+  "routers": [
+    {
+      "path": "/board",
+      "name": "",
+      "alias": "",
+      "isPage": true,
+      "meta": {
+        "title": "",
+        "menu": ""
+      },
+      "componentPath": "/Board",
+      "children": [
+        {
+          "path": "",
+          "name": "Home",
+          "alias": "首页",
+          "isPage": true,
+          "meta": {
+            "title": "主页",
+            "menu": "首页,首页"
+          },
+          "componentPath": "/Home/Index"
+        },
+        {
+          "path": "/sale",
+          "name": "Sale",
+          "alias": "开单",
+          "isPage": true,
+          "componentPath": "/SaleContainer",
+          "children": [
+            {
+              "path": "bill/list",
+              "name": "SaleBillList",
+              "alias": "销售开单",
+              "isPage": true,
+              "meta": {
+                "title": "销售开单列表",
+                "menu": "开单,销售开单"
+              },
+              "componentPath": "/Sale/BillList"
+            },
+            {
+              "path": "bill/edit",
+              "name": "SaleBillEdit",
+              "alias": "销售开单",
+              "isPage": true,
+              "meta": {
+                "title": "销售开单",
+                "menu": "开单,销售开单"
+              },
+              "componentPath": "/Sale/BillEdit"
+            },
+            {
+              "path": "bill/tslist",
+              "name": "TsSaleBillList",
+              "alias": "特殊开单",
+              "isPage": true,
+              "meta": {
+                "title": "特殊开单列表",
+                "menu": "开单,特殊开单"
+              },
+              "componentPath": "/Sale/TsBillList"
+            },
+            {
+              "path": "return/list",
+              "name": "ReturnList",
+              "alias": "销售退货",
+              "isPage": true,
+              "meta": {
+                "title": "销售退货",
+                "menu": "开单,销售退货"
+              },
+              "componentPath": "/Sale/ReturnList"
+            },
+            {
+              "path": "return/edit",
+              "name": "SaleReturnEdit",
+              "alias": "销售退货",
+              "isPage": true,
+              "meta": {
+                "title": "销售退货",
+                "menu": "开单,销售退货"
+              },
+              "componentPath": "/Sale/ReturnEdit"
+            }
+          ]
+        },
+        {
+          "path": "/bulkreplenish",
+          "name": "BulkReplenish",
+          "alias": "展厅",
+          "isPage": true,
+          "componentPath": "/BulkReplenishContainer",
+          "children": [
+            {
+              "path": "goodslist",
+              "name": "GoodsList",
+              "alias": "展厅",
+              "isPage": true,
+              "meta": {
+                "title": "展厅",
+                "menu": "展厅,展厅"
+              },
+              "componentPath": "/BulkReplenish/GoodsList"
+            },
+            {
+              "path": "goodsdetail",
+              "name": "GoodsDetail",
+              "alias": "展厅商品详情",
+              "isPage": false,
+              "meta": {
+                "title": "商品详情",
+                "menu": "展厅,商品详情"
+              },
+              "componentPath": "/GoodsDetail"
+            }
+          ]
+        },
+        {
+          "path": "/onlinemessage",
+          "name": "OnlineMessage",
+          "alias": "客服",
+          "isPage": false,
+          "meta": {
+            "title": "客服",
+            "menu": "客服,客服"
+          },
+          "componentPath": "/OnlineMessage"
+        },
+        {
+          "path": "/report",
+          "name": "Report",
+          "alias": "报表",
+          "isPage": true,
+          "meta": {
+            "title": "报表",
+            "menu": "报表,报表"
+          },
+          "componentPath": "/ReportContainer",
+          "children": [
+            {
+              "path": "menu",
+              "name": "ReportMenu",
+              "alias": "报表菜单",
+              "isPage": true,
+              "meta": {
+                "title": "菜单",
+                "menu": "报表,菜单"
+              },
+              "componentPath": "/Report/Menu"
+            },
+            {
+              "path": "type/:id",
+              "name": "ReportDetail",
+              "alias": "报表菜单",
+              "isPage": true,
+              "meta": {
+                "title": "详情",
+                "menu": "报表,详情"
+              },
+              "componentPath": "/Report/Detail"
+            }
+          ]
+        },
+        {
+          "path": "/setting",
+          "name": "Setting",
+          "alias": "设置",
+          "isPage": true,
+          "componentPath": "/SettingContainer",
+          "children": [
+            {
+              "path": "area",
+              "name": "Area",
+              "alias": "地区管理",
+              "isPage": true,
+              "meta": {
+                "title": "地区管理",
+                "menu": "设置,地区管理"
+              },
+              "componentPath": "/BasicData/Area"
+            },
+            {
+              "path": "store",
+              "name": "Store",
+              "alias": "仓库管理",
+              "isPage": true,
+              "meta": {
+                "title": "仓库管理",
+                "menu": "设置,仓库管理"
+              },
+              "componentPath": "/BasicData/Store"
+            },
+            {
+              "path": "api",
+              "name": "Api",
+              "alias": "Api管理",
+              "isPage": true,
+              "meta": {
+                "title": "Api管理",
+                "menu": "设置,Api管理"
+              },
+              "componentPath": "/BasicData/Api"
+            },
+            {
+              "path": "agent",
+              "name": "Agent",
+              "alias": "代理商管理",
+              "isPage": true,
+              "meta": {
+                "title": "代理商管理",
+                "menu": "设置,代理商管理"
+              },
+              "componentPath": "/BasicData/Agent"
+            },
+            {
+              "path": "logistics",
+              "name": "Logistics",
+              "alias": "物流管理",
+              "isPage": true,
+              "meta": {
+                "title": "物流管理",
+                "menu": "设置,物流管理"
+              },
+              "componentPath": "/BasicData/Logistics"
+            },
+            {
+              "path": "wares",
+              "name": "Wares",
+              "alias": "商品管理",
+              "isPage": true,
+              "meta": {
+                "title": "商品管理",
+                "menu": "设置,商品管理"
+              },
+              "componentPath": "/BasicData/Wares"
+            },
+            {
+              "path": "discount/list",
+              "name": "DiscountList",
+              "alias": "折扣管理",
+              "isPage": true,
+              "meta": {
+                "title": "折扣列表",
+                "menu": "设置,折扣管理"
+              },
+              "componentPath": "/BasicData/DiscountList"
+            },
+            {
+              "path": "discount/edit",
+              "name": "DiscountEdit",
+              "alias": "折扣管理",
+              "isPage": true,
+              "meta": {
+                "title": "折扣编辑",
+                "menu": "设置,折扣管理"
+              },
+              "componentPath": "/BasicData/DiscountEdit"
+            },
+            {
+              "path": "role",
+              "name": "Role",
+              "alias": "职位管理",
+              "isPage": true,
+              "meta": {
+                "title": "职位管理",
+                "menu": "设置,职位管理"
+              },
+              "componentPath": "/BasicData/Role"
+            },
+            {
+              "path": "staff",
+              "name": "Staff",
+              "alias": "职员管理",
+              "isPage": true,
+              "meta": {
+                "title": "职员管理",
+                "menu": "设置,职员管理"
+              },
+              "componentPath": "/BasicData/Staff"
+            },
+            {
+              "path": "register",
+              "name": "Register",
+              "alias": "注册用户",
+              "isPage": true,
+              "meta": {
+                "title": "注册用户",
+                "menu": "设置,注册用户"
+              },
+              "componentPath": "/BasicData/Register"
+            },
+            {
+              "path": "UserRights",
+              "name": "UserRights",
+              "alias": "权限分配",
+              "isPage": true,
+              "meta": {
+                "title": "权限分配",
+                "menu": "设置,权限分配"
+              },
+              "componentPath": "/BasicData/UserRights"
+            },
+            {
+              "path": "UserDistribution",
+              "name": "UserDistribution",
+              "alias": "人员分配",
+              "isPage": true,
+              "meta": {
+                "title": "人员分配",
+                "menu": "设置,人员分配"
+              },
+              "componentPath": "/BasicData/UserDistribution"
+            },
+            //{
+            //  "path": "saleTask",
+            //  "name": "SaleTask",
+            //  "alias": "任务管理",
+            //  "isPage": true,
+            //  "meta": {
+            //    "title": "任务管理",
+            //    "menu": "设置,任务管理"
+            //  },
+            //  "componentPath": "/BasicData/SaleTask"
+            //},
+            {
+              "path": "news/edit",
+              "name": "NewsEdit",
+              "alias": "公告管理",
+              "isPage": true,
+              "meta": {
+                "title": "公告编辑",
+                "menu": "设置,公告管理"
+              },
+              "componentPath": "/News/Edit"
+            },
+            {
+              "path": "news/list",
+              "name": "NewsList",
+              "alias": "公告管理",
+              "isPage": true,
+              "meta": {
+                "title": "公告列表",
+                "menu": "设置,公告管理"
+              },
+              "componentPath": "/News/List"
+            },
+            {
+              "path": "news/details",
+              "name": "NewsDetails",
+              "alias": "公告管理",
+              "isPage": true,
+              "meta": {
+                "title": "公告详情",
+                "menu": "设置,公告管理"
+              },
+              "componentPath": "/News/NewsDetails"
+            },
+            {
+              "path": "activity/edit",
+              "name": "ActivityEdit",
+              "alias": "活动管理",
+              "isPage": true,
+              "meta": {
+                "title": "活动编辑",
+                "menu": "设置,活动管理"
+              },
+              "componentPath": "/Activity/Edit"
+            },
+            {
+              "path": "activity/list",
+              "name": "ActivityList",
+              "alias": "活动管理",
+              "isPage": true,
+              "meta": {
+                "title": "活动列表",
+                "menu": "设置,活动管理"
+              },
+              "componentPath": "/Activity/List"
+            },
+            {
+              "path": "activity/details",
+              "name": "ActivityDetails",
+              "alias": "活动管理",
+              "isPage": true,
+              "meta": {
+                "title": "活动详情",
+                "menu": "设置,活动管理"
+              },
+              "componentPath": "/Activity/Details"
+            },
+            {
+              "path": "report",
+              "name": "SReport",
+              "alias": "报表管理",
+              "isPage": true,
+              "meta": {
+                "title": "报表管理",
+                "menu": "设置,报表管理"
+              },
+              "componentPath": "/BasicData/Report"
+            }
+            //{
+            //  "path": "available",
+            //  "name": "Available",
+            //  "alias": "每日可售表",
+            //  "isPage": true,
+            //  "meta": {
+            //    "title": "更新每日可售表",
+            //    "menu": "设置,每日可售表"
+            //  },
+            //  "componentPath": "/BasicData/Available"
+            //}
+          ]
+        },
+        {
+          "path": "/cart",
+          "name": "Cart",
+          "alias": "购物车",
+          "isPage": false,
+          "meta": {
+            "title": "购物车",
+            "menu": "购物车,购物车"
+          },
+          "componentPath": "/Cart"
+        }
+      ]
+    }
+  ]
+}

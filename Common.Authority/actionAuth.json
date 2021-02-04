@@ -1,0 +1,658 @@
+﻿{
+  "modules": [
+    {
+      "name": "开单",
+      "value": "",
+      "icon": "icon iconfont icon-xiaoshou",
+      "children": [
+        {
+          "name": "销售开单",
+          "value": "",
+          "children": [
+            {
+              "name": "新增",
+              "value": 1,
+              "children": []
+            },
+            {
+              "name": "查询",
+              "value": 2,
+              "children": []
+            },
+            {
+              "name": "编辑",
+              "value": 4,
+              "children": []
+            },
+            {
+              "name": "审核&反反审核",
+              "value": 16,
+              "children": []
+            },
+            {
+              "name": "关闭",
+              "value": 32,
+              "children": []
+            },
+            {
+              "name": "确认发货",
+              "value": 64,
+              "children": []
+            },
+            {
+              "name": "打印",
+              "value": 256,
+              "children": []
+            },
+            {
+              "name": "导出EXCEL",
+              "value": 2048,
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "特殊开单",
+          "value": "",
+          "children": [
+            {
+              "name": "新增",
+              "value": 1,
+              "children": []
+            },
+            {
+              "name": "查询",
+              "value": 2,
+              "children": []
+            },
+            {
+              "name": "编辑",
+              "value": 4,
+              "children": []
+            },
+            {
+              "name": "审核&反反审核",
+              "value": 16,
+              "children": []
+            },
+            {
+              "name": "关闭",
+              "value": 32,
+              "children": []
+            },
+            {
+              "name": "确认发货",
+              "value": 64,
+              "children": []
+            },
+            {
+              "name": "打印",
+              "value": 256,
+              "children": []
+            },
+            {
+              "name": "导出EXCEL",
+              "value": 2048,
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "销售退货",
+          "value": "",
+          "children": [
+            {
+              "name": "查询",
+              "value": 2,
+              "children": []
+            },
+            {
+              "name": "审核&反审核",
+              "value": 16,
+              "children": []
+            },
+            {
+              "name": "确认收货",
+              "value": 64,
+              "children": []
+            },
+            {
+              "name": "退款",
+              "value": 1024,
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "展厅",
+      "value": "",
+      "icon": "icon iconfont icon-zhanting1",
+      "children": [
+        {
+          "name": "展厅",
+          "value": "",
+          "children": [
+            {
+              "name": "选购",
+              "value": 2,
+              "children": []
+            },
+            {
+              "name": "结算",
+              "value": 64,
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "报表",
+      "value": "",
+      "icon": "icon iconfont icon-baobiao",
+      "children": [
+        {
+          "name": "报表菜单",
+          "value": "",
+          "children": [
+            {
+              "name": "查询",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "name": "分享统计表",
+          "value": "",
+          "children": [
+            {
+              "name": "查询",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "name": "分享明细表",
+          "value": "",
+          "children": [
+            {
+              "name": "查询",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "name": "日表",
+          "value": "",
+          "children": [
+            {
+              "name": "查询",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "name": "年月表",
+          "value": "",
+          "children": [
+            {
+              "name": "查询",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "name": "TEST2",
+          "value": "",
+          "children": [
+            {
+              "name": "查询",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "name": "TEST3",
+          "value": "",
+          "children": [
+            {
+              "name": "查询",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "name": "TEST4",
+          "value": "",
+          "children": [
+            {
+              "name": "查询",
+              "value": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "设置",
+      "value": "",
+      "icon": "icon iconfont icon-shezhi1",
+      "children": [
+        //{
+        //  "name": "地区管理",
+        //  "value": "",
+        //  "children": [
+        //    {
+        //      "name": "新增",
+        //      "value": 1,
+        //      "children": []
+        //    },
+        //    {
+        //      "name": "查询",
+        //      "value": 2,
+        //      "children": []
+        //    },
+        //    {
+        //      "name": "编辑",
+        //      "value": 4,
+        //      "children": []
+        //    }
+        //  ]
+        //},
+        {
+          "name": "仓库管理",
+          "value": "",
+          "children": [
+            {
+              "name": "新增",
+              "value": 1,
+              "children": []
+            },
+            {
+              "name": "查询",
+              "value": 2,
+              "children": []
+            },
+            {
+              "name": "编辑",
+              "value": 4,
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "代理商管理",
+          "value": "",
+          "children": [
+            {
+              "name": "新增",
+              "value": 1,
+              "children": []
+            },
+            {
+              "name": "查询",
+              "value": 2,
+              "children": []
+            },
+            {
+              "name": "编辑",
+              "value": 4,
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "商品管理",
+          "value": "",
+          "children": [
+            {
+              "name": "新增",
+              "value": 1,
+              "children": []
+            },
+            {
+              "name": "查询",
+              "value": 2,
+              "children": []
+            },
+            {
+              "name": "编辑",
+              "value": 4,
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "折扣管理",
+          "value": "",
+          "children": [
+            {
+              "name": "新增",
+              "value": 1,
+              "children": []
+            },
+            {
+              "name": "查询",
+              "value": 2,
+              "children": []
+            },
+            {
+              "name": "提交",
+              "value": 64,
+              "children": []
+            },
+            {
+              "name": "审核&反审核",
+              "value": 16,
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "职位管理",
+          "value": "",
+          "children": [
+            {
+              "name": "新增",
+              "value": 1,
+              "children": []
+            },
+            {
+              "name": "查询",
+              "value": 2,
+              "children": []
+            },
+            {
+              "name": "编辑",
+              "value": 4,
+              "children": []
+            },
+            {
+              "name": "删除",
+              "value": 8,
+              "children": []
+            },
+            {
+              "name": "操作授权",
+              "value": 16,
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "职员管理",
+          "value": "",
+          "children": [
+            {
+              "name": "新增",
+              "value": 1,
+              "children": []
+            },
+            {
+              "name": "查询",
+              "value": 2,
+              "children": []
+            },
+            {
+              "name": "编辑",
+              "value": 4,
+              "children": []
+            },
+            {
+              "name": "删除",
+              "value": 8,
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "注册用户",
+          "value": "",
+          "children": [
+            {
+              "name": "新增",
+              "value": 1,
+              "children": []
+            },
+            {
+              "name": "查询",
+              "value": 2,
+              "children": []
+            },
+            {
+              "name": "编辑",
+              "value": 4,
+              "children": []
+            },
+            {
+              "name": "删除",
+              "value": 8,
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "物流管理",
+          "value": "",
+          "children": [
+            {
+              "name": "新增",
+              "value": 1,
+              "children": []
+            },
+            {
+              "name": "查询",
+              "value": 2,
+              "children": []
+            },
+            {
+              "name": "编辑",
+              "value": 4,
+              "children": []
+            }
+          ]
+        },
+        //{
+        //  "name": ""
+        //  "value": "任务管理",
+        //  "children": [
+        //    {
+        //      "name": "查询",
+        //      "value": 2,
+        //      "children": []
+        //    },
+        //    {
+        //      "name": "编辑",
+        //      "value": 4,
+        //      "children": []
+        //    },
+        //    {
+        //      "name": "删除",
+        //      "value": 8,
+        //      "children": []
+        //    }
+        //  ]
+        //},
+        {
+          "name": "公告管理",
+          "value": "",
+          "children": [
+            {
+              "name": "新增",
+              "value": 1,
+              "children": []
+            },
+            {
+              "name": "查询",
+              "value": 2,
+              "children": []
+            },
+            {
+              "name": "编辑",
+              "value": 4,
+              "children": []
+            },
+            {
+              "name": "删除",
+              "value": 8,
+              "children": []
+            },
+            {
+              "name": "发布&取消发布",
+              "value": 16,
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "活动管理",
+          "value": "",
+          "children": [
+            {
+              "name": "新增",
+              "value": 1,
+              "children": []
+            },
+            {
+              "name": "查询",
+              "value": 2,
+              "children": []
+            },
+            {
+              "name": "编辑",
+              "value": 4,
+              "children": []
+            },
+            {
+              "name": "删除",
+              "value": 8,
+              "children": []
+            },
+            {
+              "name": "发布&取消发布",
+              "value": 16,
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "报表管理",
+          "value": "",
+          "children": [
+            {
+              "name": "新增",
+              "value": 1,
+              "children": []
+            },
+            {
+              "name": "查询",
+              "value": 2,
+              "children": []
+            },
+            {
+              "name": "编辑",
+              "value": 4,
+              "children": []
+            },
+            {
+              "name": "删除",
+              "value": 8,
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "权限分配",
+          "value": "",
+          "children": [
+            //{
+            //  "name": "新增",
+            //  "value": 1,
+            //  "children": []
+            //},
+            {
+              "name": "查询",
+              "value": 2,
+              "children": []
+            }
+            //{
+            //  "name": "编辑",
+            //  "value": 4,
+            //  "children": []
+            //},
+            //{
+            //  "name": "删除",
+            //  "value": 8,
+            //  "children": []
+            //}
+          ]
+        },
+        {
+          "name": "人员分配",
+          "value": "",
+          "children": [
+            //{
+            //  "name": "新增",
+            //  "value": 1,
+            //  "children": []
+            //},
+            {
+              "name": "查询",
+              "value": 2,
+              "children": []
+            }
+            //{
+            //  "name": "编辑",
+            //  "value": 4,
+            //  "children": []
+            //},
+            //{
+            //  "name": "删除",
+            //  "value": 8,
+            //  "children": []
+            //}
+          ]
+        },
+        {
+          "name": "Api管理",
+          "value": "",
+          "children": [
+            {
+              "name": "新增",
+              "value": 1,
+              "children": []
+            },
+            {
+              "name": "查询",
+              "value": 2,
+              "children": []
+            },
+            {
+              "name": "编辑",
+              "value": 4,
+              "children": []
+            },
+            {
+              "name": "删除",
+              "value": 8,
+              "children": []
+            }
+          ]
+        }
+        //{
+        //  "name": "每日可售表",
+        //  "value": "",
+        //  "children": [
+        //    {
+        //      "name": "更新",
+        //      "value": 4,
+        //      "children": []
+        //    }
+        //  ]
+        //}
+      ]
+    }
+  ]
+}

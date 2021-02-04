@@ -1,0 +1,43 @@
+�޸Ķ�ȡʱ
+fF100006: ""
+fF100007: ""
+fF100008: ""
+fF100009: ""
+fautoapplicationdiscount: "1"
+fauxpropid: 0
+fbomid: 0
+fcode: "10002"
+
+
+fcomputemode: "A"
+fdescription: ""
+fdiscount: 0
+fdiscountaccording: "A"
+fdiscountobj: ""
+fdiscountrate: 0
+fdiscounttype: "1"
+feffectivedate: "2019-09-04T00:00:00"
+fentryid: 44
+fexpirydate: "2020-09-04T00:00:00"
+fforbiddate: null
+
+fforbiderid: 0
+fforbidstatus: "A"
+ffromqty: 0
+fid: 68
+floT_TEXT: ""
+flot: 0
+fmaterialgroupid: 0
+fmaterialid: 4
+fmaterialtypeid: 237
+fmeterialname: "123"
+
+fopcode: ""
+fpricediscount: 0
+fpriceunitid: 100402
+frowauditstatus: "U"
+fseq: 2
+ftoqty: 0
+funitid: 100402
+
+funitname: "123"

@@ -1,0 +1,152 @@
+<?xml version="1.0"?>
+<Xml xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Report>
+    <Category>销售</Category>
+    <Id>1</Id>
+    <Name>日表</Name>
+    <InsertSql><![CDATA[]]></InsertSql>
+    <QuerySql><![CDATA[SELECT * FROM (SELECT    YEAR(FCREATEDATE) AS 年, MONTH(FCREATEDATE) AS 月, CONVERT(nvarchar(10), FCREATEDATE, 
+                   120) AS 注册日期, (CASE ISNEW WHEN 'True' THEN 'New' ELSE 'Old' END) AS 新老客户, COUNT(*) AS 数量
+FROM      dbo.T_ESS_CHANNELSTAFF
+where  FCHANNELID = 27 GROUP BY YEAR(FCREATEDATE), MONTH(FCREATEDATE), CONVERT(nvarchar(10), FCREATEDATE, 120), 
+                   (CASE ISNEW WHEN 'True' THEN 'New' ELSE 'Old' END) ) t 
+]]></QuerySql>
+    <DateField>注册日期</DateField>
+    <FixedField />
+    <FilterField />
+    <OrderBy>ORDER BY 注册日期 DESC</OrderBy>
+    <GroupBy>
+
+</GroupBy>
+    <Childrens />
+  </Report>
+  <Report>
+    <Category>库存</Category>
+    <Id>2</Id>
+    <Name>TEST2</Name>
+    <InsertSql><![CDATA[]]></InsertSql>
+    <QuerySql><![CDATA[SELECT * FROM dbo.SEOrder]]></QuerySql>
+    <DateField>FDATE</DateField>
+    <FixedField />
+    <OrderBy />
+    <GroupBy />
+    <Childrens />
+  </Report>
+  <Report>
+    <Category>库存</Category>
+    <Id>3</Id>
+    <Name>TEST3</Name>
+    <InsertSql><![CDATA[]]></InsertSql>
+    <QuerySql><![CDATA[SELECT * FROM dbo.SEOrder]]></QuerySql>
+    <DateField>FDATE</DateField>
+    <FilterField />
+    <OrderBy />
+    <GroupBy />
+    <Childrens />
+  </Report>
+  <Report>
+    <Category>提成管理</Category>
+    <Id>4</Id>
+    <Name>TEST4</Name>
+    <InsertSql><![CDATA[]]></InsertSql>
+    <QuerySql><![CDATA[SELECT * FROM dbo.SEOrder]]></QuerySql>
+    <DateField>FDATE</DateField>
+    <FixedField />
+    <FilterField />
+    <OrderBy />
+    <GroupBy />
+    <Childrens />
+  </Report>
+  <Report>
+    <Category>销售</Category>
+    <Id>5</Id>
+    <Name>年月表</Name>
+    <InsertSql><![CDATA[]]></InsertSql>
+    <QuerySql><![CDATA[SELECT t.年, t.新老客户, t.[1月], t.[2月], t.[3月], t.[4月], t.[5月], t.[6月], t.[7月], t.[8月], t.[9月], t.[10月], t.[11月], t.[12月] FROM (SELECT CONVERT(varchar(10),YEAR(FCREATEDATE)) as 年,(case ISNEW when 'True' then 'New' else 'Old' end) as 新老客户 ,
+sum(case when datepart(month,FCREATEDATE)=1 then 1 else 0 end)as '1月',
+sum(case when datepart(month,FCREATEDATE)=2 then 1 else 0 end)as '2月',
+sum(case when datepart(month,FCREATEDATE)=3 then 1 else 0 end)as '3月',
+sum(case when datepart(month,FCREATEDATE)=4 then 1 else 0 end)as '4月',
+sum(case when datepart(month,FCREATEDATE)=5 then 1 else 0 end)as '5月',
+sum(case when datepart(month,FCREATEDATE)=6 then 1 else 0 end)as '6月',
+sum(case when datepart(month,FCREATEDATE)=7 then 1 else 0 end)as '7月',
+sum(case when datepart(month,FCREATEDATE)=8 then 1 else 0 end)as '8月',
+sum(case when datepart(month,FCREATEDATE)=9 then 1 else 0 end)as '9月',
+sum(case when datepart(month,FCREATEDATE)=10 then 1 else 0 end)as '10月',
+sum(case when datepart(month,FCREATEDATE)=11 then 1 else 0 end)as '11月',
+sum(case when datepart(month,FCREATEDATE)=12 then 1 else 0 end)as '12月',
+MIN(FCREATEDATE) FCREATEDATE
+from [dbo].[T_ESS_CHANNELSTAFF]
+where FCHANNELID=27
+GROUP BY YEAR(FCREATEDATE),(CASE ISNEW WHEN 'True' THEN 'New' ELSE 'Old' END))t]]></QuerySql>
+    <DateField>FCREATEDATE</DateField>
+    <FixedField />
+    <FilterField />
+    <OrderBy>order by t.年 DESC</OrderBy>
+    <GroupBy />
+    <Childrens />
+  </Report>
+  <Report>
+    <Category>销售</Category>
+    <Id>6</Id>
+    <Name>分享统计表</Name>
+    <InsertSql><![CDATA[]]></InsertSql>
+    <QuerySql><![CDATA[SELECT *
+FROM(SELECT F.UUID 分享记录ID, F.分享人, F.分享时间, F.活动主题, F.商品名称, F.查看人数, COUNT(Fid) AS 购买人数, SUM(P.Factamount) AS 购买金额
+     FROM(SELECT *
+          FROM(SELECT A.UUID, H.KHNAME AS 分享人,isnull(B.查看人数,0)查看人数, D.FTITLE 活动主题, C.fname AS 商品名称, CONVERT(VARCHAR(20), A.DATE, 120) 分享时间
+               FROM [dbo].[A_SHAREINFO] A
+                    LEFT JOIN (select a.UUID,COUNT(1) 查看人数 from A_SHAREINFOENTRY a LEFT JOIN dbo.A_SHAREINFO b ON b.UUID = a.UUID WHERE a.WXOPENID<>b.WXOPENID group by a.UUID) B ON A.UUID=B.UUID
+                    LEFT JOIN [dbo].[T_Goods] C ON A.GOODSID=C.fid
+                    LEFT JOIN [dbo].[T_SALE_ACTIVITY] D ON A.ACTIVITYID=D.FID
+                    LEFT JOIN [dbo].[T_ESS_CHANNELSTAFF] H ON A.WXOPENID=H.FWXOPENID) T
+          GROUP BY T.商品名称, T.分享人,T.查看人数, T.分享时间, T.活动主题, T.UUID) F
+         LEFT JOIN dbo.T_POrders P ON F.UUID=P.Fuuid
+     GROUP BY F.UUID, F.分享人, F.分享时间, F.活动主题, F.商品名称, F.查看人数) g]]></QuerySql>
+    <DateField>g.分享时间</DateField>
+    <FixedField />
+    <FilterField />
+    <OrderBy>order by g.分享时间 desc</OrderBy>
+    <GroupBy />
+    <Modal1Field>查看人数</Modal1Field>
+    <Modal1Sql>select  c.FMOBILE as 手机号,CONVERT(VARCHAR(20),b.DATE,120)  as 查看时间,c.KHNAME as 姓名 from
+[dbo].[A_SHAREINFOENTRY] b 
+left join [dbo].[T_ESS_CHANNELSTAFF] c on b.wxopenid=c.fwxopenid 
+left join A_SHAREINFO d on d.uuid = b.uuid where b.wxopenid &lt;&gt; d.wxopenid and b.uuid ={分享记录id}</Modal1Sql>
+    <Modal2Field>购买人数</Modal2Field>
+    <Modal2Sql> SELECT C.KHNAME 购买人, C.FMOBILE AS 手机号码,CONVERT(VARCHAR(20),A.FORDERDATE,120) AS 购买日期, A.FACTAMOUNT AS 购买金额 FROM T_PORDERS A LEFT JOIN 
+ T_ESS_CHANNELSTAFF C ON C.FID = A.FPERSONID
+WHERE A.FUUID = {分享记录id}</Modal2Sql>
+    <Modal3Field>分享人</Modal3Field>
+    <Modal3Sql> SELECT KHNAME 姓名,FMOBILE 手机,AREA 地区 FROM T_ESS_CHANNELSTAFF WHERE FWXOPENID = (SELECT WXOPENID FROM A_SHAREINFO WHERE UUID={分享记录id})</Modal3Sql>
+    <Childrens />
+  </Report>
+  <Report>
+    <Category>销售</Category>
+    <Id>7</Id>
+    <Name>分享明细表</Name>
+    <InsertSql><![CDATA[]]></InsertSql>
+    <QuerySql><![CDATA[SELECT *
+FROM(SELECT F.UUID 分享记录ID, F.分享人, F.分享时间, F.活动主题, F.商品名称, P.FcustomerName 购买人, P.Factamount AS 购买金额
+     FROM(SELECT *
+          FROM(SELECT A.UUID, H.KHNAME AS 分享人, D.FTITLE 活动主题, C.fname AS 商品名称, CONVERT(VARCHAR(20), A.DATE, 120) 分享时间
+               FROM [dbo].[A_SHAREINFO] A
+                    LEFT JOIN [dbo].[T_Goods] C ON A.GOODSID=C.fid
+                    LEFT JOIN [dbo].[T_SALE_ACTIVITY] D ON A.ACTIVITYID=D.FID
+                    LEFT JOIN [dbo].[T_ESS_CHANNELSTAFF] H ON A.WXOPENID=H.FWXOPENID) T
+          GROUP BY T.商品名称, T.分享人,T.分享时间, T.活动主题, T.UUID) F
+         LEFT JOIN dbo.T_POrders P ON F.UUID=P.Fuuid) g]]></QuerySql>
+    <DateField />
+    <FixedField />
+    <FilterField>分享人</FilterField>
+    <OrderBy>ORDER BY 分享时间 DESC</OrderBy>
+    <GroupBy />
+    <Modal1Field />
+    <Modal1Sql />
+    <Modal2Field />
+    <Modal2Sql />
+    <Modal3Field />
+    <Modal3Sql />
+    <Childrens />
+  </Report>
+</Xml>
