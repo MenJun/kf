@@ -1340,6 +1340,8 @@ namespace Api.Services.V1
             };
         }
 
+       
+
         /// <summary>
         /// 获取客户端IP地址（无视代理）
         /// </summary>
@@ -3360,6 +3362,262 @@ namespace Api.Services.V1
         public string bbb()
         {
             return "以上新加";
+        }
+        /// <summary>
+        /// pc用户列表
+        /// </summary>
+        /// <returns></returns>
+        public async Task<Response> pc_QueryCustomers()
+        {
+            var result = WxappDao.pc_QueryCustomers();
+
+            foreach (var item in result)
+            {
+                var openid = (string)item["FWXOPENID"];
+                var count = RedisHelper.StringGet(openid);
+                item["count"] = count == "0" ? "" : count;
+                item["diffMinutes"] = DateTime.Now.Subtract(TimeStampHelper.FromTimeStamp((long)item["createtime"]).AddHours(-8)).TotalMinutes;
+            }
+
+            //result = result.Where(x => x["diffMinutes"] <= 48 * 60).ToList();
+
+            return new Response
+            {
+                Result = result
+            };
+        }
+        public async Task<Response> pc_ZXKH_ALLGroupList()
+        {
+            var results = WxappDao.pc_ZXKH_ALLGroupList();
+            foreach (var item in results)
+            {
+
+                var openid = (string)item["GroupNo"];
+                var count = RedisHelper.StringGet(openid);
+                item["count"] = count == "0" ? "" : count;
+                item["diffMinutes"] = DateTime.Now.Subtract(TimeStampHelper.FromTimeStamp((long)item["createtime"]).AddHours(-8)).TotalMinutes;
+
+                var groupno = item["GroupNo"];  //定义群组的id
+
+                var groupname = item["GroupName"];   //定义群组的名称
+                if (groupname == null)
+                {
+                    var userName = WxappDao.ZXKH_GroupName(groupno);  //定义群组下面成员的名称
+                    for (int i = 0; i < userName.Count; i++)   //如果群组名称没有则用成员拼凑
+                    {
+                        if (i == 0)
+                        {
+                            item["GroupName"] = userName[i];
+                        }
+                        else
+                        {
+                            item["GroupName"] += "、" + userName[i];
+                            if (i > 1)
+                            {
+                                item["GroupName"] += "...";
+                                break;
+                            }
+                        }
+                    }
+                }
+                //获取群最后一条群成员发送的消息
+                var groupmessage = WxappDao.ZXKH_GroupBy(groupno);
+                if (groupmessage.Count == 1)
+                {
+                    item["content"] = groupmessage[0][0];
+                    item["createtime"] = groupmessage[0][1];
+                }
+
+                //如果图片为空则添加
+                if (item["picUrl"] == null || item["picUrl"] == "")
+                {
+                    var bb = WxappDao.ZXKH_GroupImg(groupno);
+                    string[] path = new string[bb.Count];
+                    for (int i = 0; i < bb.Count; i++)
+                    {
+                        path[i] = bb[i];
+                    }
+                    JiuGongDiagram jiuGong = new JiuGongDiagram();
+                    var bitmap = jiuGong.Synthetic(path, true);
+                    item["picUrl"] = "data:image/jpeg;base64," + ZXKH_ToBase64(bitmap);
+                    WxappDao.ZXKH_GroupImgBase64(groupno, item["picUrl"]);
+                    ////可以保存到本地或者上传到文件服务器
+                    //bitmap.Save(@"C:\Users\dfish001\Desktop\小程序及API\wxapp\static\images\4.jpg", System.DrawingCore.Imaging.ImageFormat.Jpeg);
+
+                    //System.Drawing.Image img = System.Drawing.Image.FromHbitmap(bitmap.GetHbitmap());
+                    //item["picture"] = @"C:\Users\dfish001\Desktop\小程序及API\wxapp\static\images\1.jpg";
+                    bitmap.Dispose();
+                }
+            };
+            return new Response
+            {
+                Result = results
+            };
+        }
+
+        public string pc_kf_Lastgroup(string staffId)
+        {
+            return WxappDao.pc_kf_Lastgroup(staffId);
+        }
+
+        public object pc_Que(string ToGroup)
+        {
+            return WxappDao.pc_Que(ToGroup).FirstOrDefault();
+        }
+
+        public object pc_QueryCustomerInfo(string toUserName)
+        {
+            return WxappDao.pc_QueryCustomerInfo(toUserName).FirstOrDefault();
+        }
+
+        public async Task<IList<CustomerServiceMessageVO>> pc_QueryCustomerMsg(string wxopenid, int page, int limit)
+        {
+            var result = WxappDao.pc_QueryCustomerMessage(wxopenid, page, limit);
+
+            IList<CustomerServiceMessageVO> vos = AutoMapper.Mapper.Map<List<CustomerServiceMessageVO>>(result);
+            foreach (var item in vos)
+            {
+                if (item.MsgType == TENCENT_MSG_TYPE_CARD)
+                {
+                    string goodsId = item.PagePath.Substring(item.PagePath.IndexOf("=") + 1);
+                    item.Content = goodsId.Substring(0, goodsId.IndexOf("&"));
+                }
+
+                //if (int.TryParse(item.FromUserName, out int userId))
+                //{
+                //    var user = WxappDao.QueryUserInfo(userId);
+                //    item.FromUserName = user["KHNAME"];
+                //    item.ThumbUrl = user["PICTURE"];
+                //}
+            }
+            return await Task.FromResult(vos);
+        }
+
+        public async Task<Response> pc_ZXKH_QueryGroupMsg(string wxopenid, int page, int limit)
+        {
+            var result = WxappDao.pc_ZXKH_QueryGroupMsg(wxopenid, page, limit);
+
+            foreach (var item in result)
+            {
+                item["Identifier"] = false;
+            }
+            return await Task.FromResult(new Response { Result = result });
+        }
+        public Response pc_UploadServiceImg()
+        {
+            var files = HttpContext.Current.Request.Files;
+            var form = HttpContext.Current.Request.Form;
+
+            CustomerServiceMessage obj = new CustomerServiceMessage
+            {
+                MsgType = form["msgType"],
+                FromUserName = form["fromUserName"],
+                ToUserName = form["toUserName"],
+                XCXFromOpenId = form["XCXFromOpenId"],
+                XCXToOpenId = form["XCXToOpenId"],
+                Content = "",
+                AppId = "",
+                CreateTime = TimeStampHelper.ToTimeStamp(DateTime.Now)
+            };
+            string basePath = AppDomain.CurrentDomain.BaseDirectory;
+
+            string filePath = "ZXKF_UpLoad";                   ///SERVICE_IMG_PATH + DateTime.Now.ToString("yyyyMMdd");
+            int limitFileSize = 1024 * 1024 * 2;
+
+            string fullPath = basePath + filePath;
+            string savePath = "";
+
+            //如果目录不存在，则创建目录
+            if (!Directory.Exists(fullPath))
+            {
+                Directory.CreateDirectory(fullPath);
+            }
+
+            if (files.Count > 0)
+            {
+                foreach (var key in files.AllKeys)
+                {
+                    var file = files[key];
+                    //校验文件类型
+                    string fileExtension = Path.GetExtension(file.FileName);
+                    string fileMimeType = MimeMapping.GetMimeMapping(file.FileName);
+                    string[] fileTypeWhiteList = new string[] { ".jpg", ".jpeg", ".png" };
+                    string[] fileMimeTypeWhiteList = new string[] { "image/jpg", "image/jpeg", "image/png" };
+                    if (!fileTypeWhiteList.Contains(fileExtension.ToLower()) || !fileMimeTypeWhiteList.Contains(fileMimeType))
+                    {
+                        throw new Exception($"文件{file.FileName}是不支持的文件类型！");
+                    }
+
+                    if (file.ContentLength > limitFileSize)
+                    {
+                        throw new Exception($"文件{file.FileName}超出大小限制，请处理后上传！");
+                    }
+
+                    if (!string.IsNullOrEmpty(file.FileName))
+                    {
+                        string fileName = Guid.NewGuid().ToString("N") + Path.GetExtension(file.FileName);
+                        savePath = filePath + "/" + fileName;
+                        file.SaveAs(fullPath + "/" + fileName);
+
+                        //var token = WxHelper.GetAccessToken(AppId, Secret);
+                        //var mediaId = TencentHelper.UploadTempMedia(token, fullPath + "/" + fileName);
+                        var mediaId = ZXKH_UploadImgByB64(ImageToBase64(fullPath + "/" + fileName));
+
+                        obj.MediaId = mediaId;
+                        obj.Image = new
+                        {
+                            media_id = mediaId
+                        };
+                        obj.Content = "http://47.92.29.173:8088/" + savePath;
+
+                        //ZXKH_savemessage(obj);
+                        ZXKH_SendImage(obj.ToUserName, mediaId);
+                        //TencentHelper.SendCustomerMessageToUser(token, TencentHelper.MSG_TYPE_IMG, string.Empty, mediaId, obj.ToUserName);
+                    }
+                }
+                return new Response
+                {
+                    Result = WxappDao.SaveCustomerMessage(obj)  //savePath
+                };
+            }
+            else
+            {
+                throw new Exception("上传失败，未接收到请求文件！");
+            }
+        }
+        /// <summary>
+        /// base64 转 Image
+        /// </summary>
+        /// <param name="base64"></param>
+        public static void Base64ToImage(string base64)
+        {
+            base64 = base64.Replace("data:image/png;base64,", "").Replace("data:image/jgp;base64,", "").Replace("data:image/jpg;base64,", "").Replace("data:image/jpeg;base64,", "");//将base64头部信息替换
+            byte[] bytes = Convert.FromBase64String(base64);
+            MemoryStream memStream = new MemoryStream(bytes);
+            Image mImage = Image.FromStream(memStream);
+            Bitmap bp = new Bitmap(mImage);
+            bp.Save("C:/Users/Administrator/Desktop/" + DateTime.Now.ToString("yyyyMMddHHss") + ".jpg", System.DrawingCore.Imaging.ImageFormat.Jpeg);//注意保存路径
+        }
+
+        /// <summary>
+        /// Image 转成 base64
+        /// </summary>
+        /// <param name="fileFullName"></param>
+        public static string ImageToBase64(string fileFullName)
+        {
+            try
+            {
+                Bitmap bmp = new Bitmap(fileFullName);
+                MemoryStream ms = new MemoryStream();
+                bmp.Save(ms, System.DrawingCore.Imaging.ImageFormat.Jpeg);
+                byte[] arr = new byte[ms.Length]; ms.Position = 0;
+                ms.Read(arr, 0, (int)ms.Length); ms.Close();
+                return Convert.ToBase64String(arr);
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
         }
     }
 

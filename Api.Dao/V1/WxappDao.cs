@@ -2005,5 +2005,189 @@ GROUP BY derivedtbl_1.FNAME, derivedtbl_1.FWXOPENID, derivedtbl_1.Expr2, derived
         {
             return "以上新加";
         }
+
+        /// <summary>
+        /// pc用户列表
+        /// </summary>
+        /// <returns></returns>
+        public IList<dynamic> pc_QueryCustomers()
+        {
+            ISession session = NHSessionProvider.GetCurrentSession();
+            var sql = @"SELECT   a_1.FID, a_1.KHNAME, a_1.PICTURE, a_1.XCXOPENID, a_1.FWXOPENID, ISNULL(m1.[Content], '[图片]') AS content, 
+                        m1.CreateTime as createtime
+                        FROM      (SELECT   a.FID, a.KHNAME, b.PICTURE, a.XCXOPENID, a.FWXOPENID
+                                         FROM      dbo.T_ESS_CHANNELSTAFF AS a LEFT OUTER JOIN
+                                                         dbo.T_ESS_CHANNELSTAFF_AVATAR AS b ON a.FID = b.STAFFID LEFT OUTER JOIN
+                                                         dbo.T_ESS_CHANNELSTAFF_L AS c ON c.FID = a.FID LEFT OUTER JOIN
+                                                         dbo.A_ROLE AS d ON d.FID = c.FROLEID
+                                         WHERE   (d.FNAME <> '客服') AND (a.XCXOPENID IN
+                                                             (SELECT   XCXFromOpenId
+                                                              FROM      dbo.T_CUS_SERVER_MSG
+                                                              WHERE   (MsgId >= 0) AND (LEN(XCXToOpenId) = 28)
+                                                              GROUP BY XCXFromOpenId))) AS a_1 LEFT OUTER JOIN
+                                            (SELECT   XCXFromOpenId, MAX(Id) AS id, MAX(CreateTime) AS createTime
+                                             FROM      dbo.T_CUS_SERVER_MSG AS T_CUS_SERVER_MSG_1
+                                             WHERE   (LEN(XCXToOpenId) = 28)
+                                             GROUP BY XCXFromOpenId) AS m ON m.XCXFromOpenId = a_1.XCXOPENID LEFT OUTER JOIN
+                                        dbo.T_CUS_SERVER_MSG AS m1 ON m1.Id = m.id
+                        WHERE   (a_1.FWXOPENID <> '')";
+            return session.CreateSQLQuery(sql)
+                .SetResultTransformer(new AliasToEntityMapResultTransformer())
+                .List<dynamic>();
+        }
+        /// <summary>
+        /// pc群组列表所有正常状态的
+        /// </summary>
+        /// <returns></returns>
+        public IList<dynamic> pc_ZXKH_ALLGroupList()
+        {
+            ISession session = NHSessionProvider.GetCurrentSession();
+            string sql = @"SELECT   TOP (100) PERCENT GroupID, GroupName, GroupQRcode, GroupRemarks, GroupNo, UserFID, createtime, 
+                            GroupImgBase64 as picUrl, GroupState
+                            FROM      dbo.T_ESS_CHANNELSTAFF_GROUP
+                            WHERE   (GroupState = N'正常')
+                            ORDER BY createtime DESC";
+            return session.CreateSQLQuery(sql)
+           .SetResultTransformer(new AliasToEntityMapResultTransformer())
+           .List<dynamic>();
+        }
+
+        public string pc_kf_Lastgroup(string XCXFromOpenId)
+        {
+            ISession session = NHSessionProvider.GetCurrentSession();
+            var sql = @"SELECT   TOP (1) PERCENT derivedtbl_1.XCXFromOpenId
+                        FROM      (SELECT   dbo.T_CUS_SERVER_MSG.Id, dbo.T_CUS_SERVER_MSG.XCXToOpenId, 
+                                                         dbo.T_CUS_SERVER_MSG.XCXFromOpenId, dbo.T_CUS_SERVER_MSG.CreateTime
+                                         FROM      dbo.T_CUS_SERVER_MSG INNER JOIN
+                                                         dbo.T_ESS_CHANNELSTAFF ON 
+                                                         dbo.T_CUS_SERVER_MSG.XCXFromOpenId = dbo.T_ESS_CHANNELSTAFF.XCXOPENID INNER JOIN
+                                                         dbo.T_ESS_CHANNELSTAFF_AVATAR ON 
+                                                         dbo.T_ESS_CHANNELSTAFF.FID = dbo.T_ESS_CHANNELSTAFF_AVATAR.STAFFID
+                                         WHERE   (dbo.T_CUS_SERVER_MSG.XCXToOpenId = :P1)) 
+                                        AS derivedtbl_1 INNER JOIN
+                                            (SELECT   TOP (1) dbo.A_ROLE.FPERMISSIONS, T_ESS_CHANNELSTAFF_2.XCXOPENID
+                                             FROM      dbo.T_ESS_CHANNELSTAFF AS T_ESS_CHANNELSTAFF_1 INNER JOIN
+                                                             dbo.T_ESS_CHANNELSTAFF_RelationShip ON 
+                                                             T_ESS_CHANNELSTAFF_1.FID = dbo.T_ESS_CHANNELSTAFF_RelationShip.StaffID RIGHT OUTER JOIN
+                                                             dbo.T_ESS_CHANNELSTAFF AS T_ESS_CHANNELSTAFF_2 INNER JOIN
+                                                             dbo.T_ESS_CHANNELSTAFF_L ON 
+                                                             T_ESS_CHANNELSTAFF_2.FID = dbo.T_ESS_CHANNELSTAFF_L.FID INNER JOIN
+                                                             dbo.A_ROLE ON dbo.T_ESS_CHANNELSTAFF_L.FROLEID = dbo.A_ROLE.FID ON 
+                                                             dbo.T_ESS_CHANNELSTAFF_RelationShip.CustomerID = T_ESS_CHANNELSTAFF_2.FID
+                                             WHERE   (dbo.A_ROLE.FPERMISSIONS = 1)) AS derivedtbl_2 ON 
+                                        derivedtbl_1.XCXFromOpenId = derivedtbl_2.XCXOPENID
+                        ORDER BY derivedtbl_1.XCXToOpenId DESC";
+            var staff = session
+                .CreateSQLQuery(sql)
+                .SetParameter("P1", XCXFromOpenId)
+                .List<string>()
+                .FirstOrDefault();
+            return staff;
+        }
+
+        public IList<dynamic> pc_Que(string toGroup)
+        {
+            ISession session = NHSessionProvider.GetCurrentSession();
+            var sql = @"SELECT   TOP (1) PERCENT dbo.T_ESS_CHANNELSTAFF.FID, dbo.T_ESS_CHANNELSTAFF.KHNAME, 
+                dbo.T_ESS_CHANNELSTAFF.XCXOPENID, dbo.T_ESS_CHANNELSTAFF_GROUP.GroupNo, 
+                dbo.T_ESS_CHANNELSTAFF_GROUP.GroupName, dbo.T_ESS_CHANNELSTAFF_GROUP.GroupImgBase64, 
+                dbo.T_ESS_CHANNELSTAFF_GROUP.createtime, dbo.T_ESS_CHANNELSTAFF_GROUP.GroupState
+                FROM      dbo.T_ESS_CHANNELSTAFF INNER JOIN
+                dbo.T_ESS_CHANNELSTAFF_GROUPSHIP ON 
+                dbo.T_ESS_CHANNELSTAFF.FID = dbo.T_ESS_CHANNELSTAFF_GROUPSHIP.UserFID INNER JOIN
+                dbo.T_ESS_CHANNELSTAFF_GROUP ON 
+                dbo.T_ESS_CHANNELSTAFF_GROUPSHIP.GroupNo = dbo.T_ESS_CHANNELSTAFF_GROUP.GroupNo
+                WHERE   (dbo.T_ESS_CHANNELSTAFF_GROUP.GroupNo = :p1) AND 
+                (dbo.T_ESS_CHANNELSTAFF_GROUP.GroupState = N'正常')
+                ORDER BY dbo.T_ESS_CHANNELSTAFF_GROUP.createtime DESC";
+            return session.CreateSQLQuery(sql)
+                .SetParameter("p1", toGroup)
+                .SetResultTransformer(new AliasToEntityMapResultTransformer())
+                .List<dynamic>();
+        }
+
+        /// <summary>
+        /// 查询客户信息
+        /// </summary>
+        /// <param name="wxopenid"></param>
+        /// <returns></returns>
+        public IList<dynamic> pc_QueryCustomerInfo(string wxopenid)
+        {
+            ISession session = NHSessionProvider.GetCurrentSession();
+            //!返回的字段必须小写
+            string sql = @"SELECT a.fid,a.khname,b.picture,a.fwxopenid FROM dbo.T_ESS_CHANNELSTAFF a 
+LEFT JOIN dbo.T_ESS_CHANNELSTAFF_AVATAR b ON a.FID=b.STAFFID 
+WHERE a.FWXOPENID = :p1";
+            return session.CreateSQLQuery(sql)
+                .SetParameter("p1", wxopenid)
+                .SetResultTransformer(new AliasToEntityMapResultTransformer())
+                .List<dynamic>();
+        }
+
+        public IList<CustomerServiceMessage> pc_QueryCustomerMessage(string wxopenid, int page, int limit)
+        {
+            ISession session = NHSessionProvider.GetCurrentSession();
+            var sql = @"SELECT a.Id, a.MsgId, a.ToUserName, a.FromUserName, a.CreateTime, a.MsgType, a.Content, a.Title, a.AppId, a.PicUrl, a.PagePath, a.MediaId, a.ThumbUrl, a.ThumbMediaId,a.XCXFromOpenId,a.XCXToOpenId
+                        FROM(SELECT ROW_NUMBER() OVER (ORDER BY t.Id DESC) xh, t.Id, t.MsgId, t.ToUserName, ISNULL(cs.KHNAME, t.FromUserName) FromUserName, t.CreateTime, t.MsgType, t.Content, t.Title, t.AppId, t.PicUrl, t.PagePath, t.MediaId, ca.PICTURE ThumbUrl, t.ThumbMediaId,t.XCXFromOpenId,t.XCXToOpenId
+                             FROM(SELECT *
+                                  FROM dbo.T_CUS_SERVER_MSG
+                                  WHERE XCXFromOpenId= :p1
+                                  UNION
+                                  SELECT *
+                                  FROM dbo.T_CUS_SERVER_MSG
+                                  WHERE XCXToOpenId=:p1) t
+                                 LEFT JOIN T_ESS_CHANNELSTAFF cs ON CAST(cs.FID AS VARCHAR(20))=t.FromUserName
+                                 LEFT JOIN T_ESS_CHANNELSTAFF_AVATAR ca ON ca.STAFFID=cs.FID) a
+                        WHERE a.xh> :p2 AND xh<= :p3 ORDER BY Id";
+            return session.CreateSQLQuery(sql)
+                .SetParameter("p1", wxopenid)
+                .SetParameter("p2", (page - 1) * limit)
+                .SetParameter("p3", page * limit)
+                .SetResultTransformer(new AliasToBeanResultTransformer(typeof(CustomerServiceMessage)))
+                .List<CustomerServiceMessage>();
+        }
+
+        public IList<dynamic> pc_ZXKH_QueryGroupMsg(string wxopenid, int page, int limit)
+        {
+            //WxSendMessage
+            ISession session = NHSessionProvider.GetCurrentSession();
+            
+            string sql = @"SELECT a.Id, a.MsgId, a.XCXToOpenId, a.XCXFromOpenId, a.CreateTime, a.MsgType, a.Content, a.Title, a.AppId, a.PicUrl, a.PagePath, a.MediaId, a.ThumbUrl, a.ThumbMediaId,a.PICTURE,a.FromUserName
+        FROM(SELECT ROW_NUMBER() OVER (ORDER BY t.Id DESC) xh, t.Id, t.MsgId, t.XCXToOpenId, ISNULL(cs.KHNAME, t.XCXFromOpenId) XCXFromOpenId, t.CreateTime, t.MsgType, t.Content, t.Title, t.AppId, t.PicUrl, t.PagePath, t.MediaId, ca.PICTURE ThumbUrl, t.ThumbMediaId,t.PICTURE,t.FromUserName
+     FROM(SELECT   dbo.T_CUS_SERVER_MSG.Id, dbo.T_CUS_SERVER_MSG.MsgId, dbo.T_CUS_SERVER_MSG.XCXToOpenId, 
+                dbo.T_CUS_SERVER_MSG.XCXFromOpenId, dbo.T_CUS_SERVER_MSG.CreateTime, 
+                dbo.T_CUS_SERVER_MSG.MsgType, dbo.T_CUS_SERVER_MSG.[Content], dbo.T_CUS_SERVER_MSG.Title, 
+                dbo.T_CUS_SERVER_MSG.AppId, dbo.T_CUS_SERVER_MSG.PicUrl, dbo.T_CUS_SERVER_MSG.PagePath, 
+                dbo.T_CUS_SERVER_MSG.MediaId, dbo.T_CUS_SERVER_MSG.ThumbUrl, dbo.T_CUS_SERVER_MSG.ThumbMediaId, 
+                dbo.T_ESS_CHANNELSTAFF_AVATAR.PICTURE,dbo.T_CUS_SERVER_MSG.FromUserName
+FROM      dbo.T_CUS_SERVER_MSG INNER JOIN
+                dbo.T_ESS_CHANNELSTAFF ON 
+                dbo.T_CUS_SERVER_MSG.XCXFromOpenId = dbo.T_ESS_CHANNELSTAFF.XCXOPENID INNER JOIN
+                dbo.T_ESS_CHANNELSTAFF_AVATAR ON 
+                dbo.T_ESS_CHANNELSTAFF.FID = dbo.T_ESS_CHANNELSTAFF_AVATAR.STAFFID
+WHERE   (dbo.T_CUS_SERVER_MSG.XCXFromOpenId = :p1)
+          UNION
+          SELECT   dbo.T_CUS_SERVER_MSG.Id, dbo.T_CUS_SERVER_MSG.MsgId, dbo.T_CUS_SERVER_MSG.XCXToOpenId, 
+                dbo.T_CUS_SERVER_MSG.XCXFromOpenId, dbo.T_CUS_SERVER_MSG.CreateTime, 
+                dbo.T_CUS_SERVER_MSG.MsgType, dbo.T_CUS_SERVER_MSG.[Content], dbo.T_CUS_SERVER_MSG.Title, 
+                dbo.T_CUS_SERVER_MSG.AppId, dbo.T_CUS_SERVER_MSG.PicUrl, dbo.T_CUS_SERVER_MSG.PagePath, 
+                dbo.T_CUS_SERVER_MSG.MediaId, dbo.T_CUS_SERVER_MSG.ThumbUrl, dbo.T_CUS_SERVER_MSG.ThumbMediaId, 
+                dbo.T_ESS_CHANNELSTAFF_AVATAR.PICTURE,dbo.T_CUS_SERVER_MSG.FromUserName
+FROM      dbo.T_CUS_SERVER_MSG INNER JOIN
+                dbo.T_ESS_CHANNELSTAFF ON 
+                dbo.T_CUS_SERVER_MSG.XCXFromOpenId = dbo.T_ESS_CHANNELSTAFF.XCXOPENID INNER JOIN
+                dbo.T_ESS_CHANNELSTAFF_AVATAR ON 
+                dbo.T_ESS_CHANNELSTAFF.FID = dbo.T_ESS_CHANNELSTAFF_AVATAR.STAFFID
+WHERE   (dbo.T_CUS_SERVER_MSG.XCXToOpenId = :p1)) t
+         LEFT JOIN T_ESS_CHANNELSTAFF cs ON CAST(cs.FID AS VARCHAR(20))=t.XCXFromOpenId
+         LEFT JOIN T_ESS_CHANNELSTAFF_AVATAR ca ON ca.STAFFID=cs.FID) a
+WHERE a.xh>:p2 AND xh<=:p3 ORDER BY Id";
+            return session.CreateSQLQuery(sql)
+                .SetParameter("p1", wxopenid)
+                .SetParameter("p2", (page - 1) * limit)
+                .SetParameter("p3", page * limit)
+                .SetResultTransformer(new AliasToEntityMapResultTransformer())
+                .List<dynamic>();
+        }
     }
 }

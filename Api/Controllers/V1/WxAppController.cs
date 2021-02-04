@@ -474,6 +474,9 @@ namespace Api.Controllers.V1
             return result;
         }
 
+
+        
+
         /// <summary>
         /// 查询客户聊天记录
         /// </summary>
@@ -1404,6 +1407,132 @@ namespace Api.Controllers.V1
         public string bbb()
         {
             return "以上新加";
+        }
+
+        /// <summary>
+        /// pc用户列表
+        /// </summary>
+        /// <returns></returns>
+        [Route("pc_customers")]
+        [HttpGet]
+        [Transaction]
+        [AllowAnonymous]
+        public async Task<Response> pc_QueryCustomers()
+        {
+            var result = await WxappService.pc_QueryCustomers();
+
+            return result;
+        }
+
+        /// <summary>
+        /// pc所有群组列表
+        /// </summary>
+        /// <returns></returns>
+        [Route("pc_zxkh_allgrouplist")]
+        [HttpGet]
+        [Transaction]
+        [AllowAnonymous]
+        public async Task<Response> pc_ZXKH_ALLGroupList()
+        {
+            var result = await WxappService.pc_ZXKH_ALLGroupList();
+
+            return result;
+        }
+
+        /// <summary>
+        /// 发送消息给用户
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        [AllowAnonymous]
+        [Route("pc_zxkh_sendMsg")]
+        [HttpPost]
+        [Transaction]
+        public Response pc_ZXKH_sendMsg([FromBody]CustomerServiceMessage obj)
+        {
+
+
+            if (obj.XCXToOpenId.Length != 28)
+            {
+                obj.XCXFromOpenId = WxappService.pc_kf_Lastgroup(obj.XCXToOpenId);
+
+            }
+            obj.CreateTime = WxappService.ZXKH_ConvertDateTimeInt(DateTime.Now);
+            if (obj.MsgType == "text")
+            {
+                //if (obj.ToUserName != null)
+                //{
+                //WxappService.ZXKH_SendText(obj.ToUserName, obj.Content);
+                //}
+            }
+            WxappService.ZXKH_savemessage(obj);
+
+            if (obj.XCXToOpenId.Length != 28)
+            {
+                var hub = GlobalHost.ConnectionManager.GetHubContext<MessageHub>();
+                hub.Clients.All.notify(WxappService.pc_Que(obj.XCXToOpenId));
+            }
+            else
+            {
+                var hub = GlobalHost.ConnectionManager.GetHubContext<MessageHub>();
+                hub.Clients.All.notify(WxappService.pc_QueryCustomerInfo(obj.ToUserName));
+            }
+            //hub.Clients.All("1111");
+
+            return new Response
+            {
+                Result = new
+                {
+                    obj
+                }
+            };
+        }
+
+        /// <summary>
+        /// 查询客户聊天记录
+        /// </summary>
+        /// <param name="wxopenid"></param>
+        /// <param name="page"></param>
+        /// <param name="limit"></param>
+        /// <returns></returns>
+        [Route("pc_customerMsg")]
+        [HttpGet]
+        [Transaction]
+        public async Task<IList<CustomerServiceMessageVO>> pc_QueryCustomerMsg([FromUri]string wxopenid, [FromUri]int page, [FromUri]int limit)
+        {
+            var result = await WxappService.pc_QueryCustomerMsg(wxopenid, page, limit);
+
+            return result;
+        }
+
+        /// <summary>
+        /// 查询当前群聊聊天记录
+        /// </summary>
+        /// <param name="wxopenid"></param>
+        /// <param name="page"></param>
+        /// <param name="limit"></param>
+        /// <returns></returns>
+        [Route("pc_zxkh_groupMsg")]
+        [AllowAnonymous]
+        [HttpGet]
+        [Transaction]
+        public async Task<Response> pc_ZXKH_QueryGroupMsg([FromUri]string wxopenid, [FromUri]int page, [FromUri]int limit)
+        {
+            var result = await WxappService.pc_ZXKH_QueryGroupMsg(wxopenid, page, limit);
+            //var hub = GlobalHost.ConnectionManager.GetHubContext<MessageHub>();
+            //hub.Clients.All.notify(result);
+            return result;
+        }
+
+        /// <summary>
+        /// 上传客服图片
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("pc_upload/service")]
+        public Response pc_UploadServiceImg()
+        {
+            return WxappService.pc_UploadServiceImg();
         }
     }
 }
