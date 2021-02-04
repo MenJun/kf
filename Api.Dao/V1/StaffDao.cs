@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Api.Model.DO;
+using Api.Model.VO;
 using Common.Utils;
 using Newtonsoft.Json.Linq;
 using NHibernate;
@@ -88,6 +89,101 @@ namespace Api.Dao.V1
             return total;
 
         }
+
+        public Response SelectUser(JObject filter)
+        {
+            IList<dynamic> activicyLists;
+            var count = 0;
+            string sqlNO = "";
+            if (!string.IsNullOrWhiteSpace(filter["name"].ToString()))
+            {
+                sqlNO = $"where  (dbo.T_ESS_CHANNELSTAFF.KHNAME LIKE '%{filter["name"].ToString()}%' OR dbo.T_ESS_CHANNELSTAFF.FMOBILE LIKE '%{filter["name"].ToString()}%'  )  ";
+            }
+
+            if (!string.IsNullOrWhiteSpace(filter["name"].ToString()))
+            {
+                ISession session1 = NHSessionProvider.GetCurrentSession();
+                var sqlgly = @"SELECT   dbo.A_ROLE.FPERMISSIONS
+                FROM      dbo.T_ESS_CHANNELSTAFF AS T_ESS_CHANNELSTAFF_1 INNER JOIN
+                dbo.T_ESS_CHANNELSTAFF_RelationShip ON 
+                T_ESS_CHANNELSTAFF_1.FID = dbo.T_ESS_CHANNELSTAFF_RelationShip.StaffID RIGHT OUTER JOIN
+                dbo.T_ESS_CHANNELSTAFF INNER JOIN
+                dbo.T_ESS_CHANNELSTAFF_L ON dbo.T_ESS_CHANNELSTAFF.FID = dbo.T_ESS_CHANNELSTAFF_L.FID INNER JOIN
+                dbo.A_ROLE ON dbo.T_ESS_CHANNELSTAFF_L.FROLEID = dbo.A_ROLE.FID ON 
+                dbo.T_ESS_CHANNELSTAFF_RelationShip.CustomerID = dbo.T_ESS_CHANNELSTAFF.FID " + sqlNO;
+                string FPERMISSIONS = session1.CreateSQLQuery(sqlgly)
+                    .List<string>().FirstOrDefault();
+                if (FPERMISSIONS == "1")
+                {
+                    activicyLists = KfSelectUser(sqlNO, filter);
+                    count = activicyLists.Count;
+                    return new Response
+                    {
+                        Result = new
+                        {
+                            activicyLists,
+                            count
+                        }
+                    };
+                }
+            }
+            activicyLists = GetSelectUser(sqlNO, filter);
+            count = activicyLists.Count;
+            return new Response
+            {
+                Result = new
+                {
+                    activicyLists,
+                    count
+                }
+            };
+        }
+
+        public IList<dynamic> KfSelectUser(string sqlNO, JObject filter)
+        {
+            ISession session = NHSessionProvider.GetCurrentSession();
+            var sql = @"SELECT   dbo.T_ESS_CHANNELSTAFF.FID, dbo.T_ESS_CHANNELSTAFF.KHNAME, dbo.T_ESS_CHANNELSTAFF.FMOBILE, 
+                dbo.T_ESS_CHANNELSTAFF_L.FJOB, dbo.T_ESS_CHANNELSTAFF_L.FROLEID, dbo.T_ESS_CHANNELSTAFF.FENABLE, 
+                dbo.T_ESS_CHANNELSTAFF.FQQ, dbo.T_ESS_CHANNELSTAFF.FTELE, dbo.A_ROLE.FPERMISSIONS, 
+                dbo.T_ESS_CHANNELSTAFF_RelationShip.StaffID, T_ESS_CHANNELSTAFF_1.KHNAME AS KFNAME
+                FROM      dbo.T_ESS_CHANNELSTAFF AS T_ESS_CHANNELSTAFF_1 INNER JOIN
+                                dbo.T_ESS_CHANNELSTAFF_RelationShip ON 
+                                T_ESS_CHANNELSTAFF_1.FID = dbo.T_ESS_CHANNELSTAFF_RelationShip.StaffID RIGHT OUTER JOIN
+                                dbo.T_ESS_CHANNELSTAFF INNER JOIN
+                                dbo.T_ESS_CHANNELSTAFF_L ON dbo.T_ESS_CHANNELSTAFF.FID = dbo.T_ESS_CHANNELSTAFF_L.FID INNER JOIN
+                                dbo.A_ROLE ON dbo.T_ESS_CHANNELSTAFF_L.FROLEID = dbo.A_ROLE.FID ON 
+                                dbo.T_ESS_CHANNELSTAFF_RelationShip.CustomerID = dbo.T_ESS_CHANNELSTAFF.FID
+                WHERE   (T_ESS_CHANNELSTAFF_1.KHNAME LIKE N'%" + filter["name"] + "%')";
+            IList<dynamic> activicyLists = session.CreateSQLQuery(sql)
+                    .SetResultTransformer(new AliasToEntityMapResultTransformer())
+                    .List<dynamic>();
+            return activicyLists;
+        }
+
+        public IList<dynamic> GetSelectUser(string sqlNO, JObject filter)
+        {
+            ISession session = NHSessionProvider.GetCurrentSession();
+            var sql = @"  SELECT * FROM (SELECT ROW_NUMBER() over(order by T_ESS_CHANNELSTAFF_L.FROLEID desc) XH, 
+                T_ESS_CHANNELSTAFF.FID, T_ESS_CHANNELSTAFF.KHNAME, T_ESS_CHANNELSTAFF.FMOBILE, 
+                T_ESS_CHANNELSTAFF_L.FJOB, T_ESS_CHANNELSTAFF_L.FROLEID, T_ESS_CHANNELSTAFF.FENABLE, 
+                T_ESS_CHANNELSTAFF.FQQ, T_ESS_CHANNELSTAFF.FTELE, A_ROLE.FPERMISSIONS, 
+                T_ESS_CHANNELSTAFF_RelationShip.StaffID, T_ESS_CHANNELSTAFF_1.KHNAME AS KFNAME
+				FROM      T_ESS_CHANNELSTAFF T_ESS_CHANNELSTAFF_1 INNER JOIN
+                T_ESS_CHANNELSTAFF_RelationShip ON 
+                T_ESS_CHANNELSTAFF_1.FID = T_ESS_CHANNELSTAFF_RelationShip.StaffID RIGHT OUTER JOIN
+                T_ESS_CHANNELSTAFF INNER JOIN
+                T_ESS_CHANNELSTAFF_L ON T_ESS_CHANNELSTAFF.FID = T_ESS_CHANNELSTAFF_L.FID INNER JOIN
+                A_ROLE ON T_ESS_CHANNELSTAFF_L.FROLEID = A_ROLE.FID ON 
+                T_ESS_CHANNELSTAFF_RelationShip.CustomerID = T_ESS_CHANNELSTAFF.FID " + sqlNO + ") t ";
+            sql += $"where XH > { (Convert.ToInt32(filter["page"]) - 1) * Convert.ToInt32(filter["limit"]) } and XH <= { (Convert.ToInt32(filter["page"])) * Convert.ToInt32(filter["limit"]) }";
+            //ISession session = NHSessionProvider.SessionFactory.OpenSession();
+            //var list = session.CreateSQLQuery(sql).List();//执行查询
+            IList<dynamic> activicyLists = session.CreateSQLQuery(sql)
+                    .SetResultTransformer(new AliasToEntityMapResultTransformer())
+                    .List<dynamic>();
+            return activicyLists;
+        }
+
         public IList<dynamic> StaffListQueryFname(JObject filter)
         {
             ISession session = NHSessionProvider.GetCurrentSession();
@@ -188,6 +284,22 @@ namespace Api.Dao.V1
                 .FirstOrDefault();
             return staff;
 
+        }
+
+        /// <summary>
+        /// 批量修改客服
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="fID"></param>
+        public void DatchEditKF(int id, string FID)
+        {
+            ISession session = NHSessionProvider.GetCurrentSession();
+            var sql = @"update T_ESS_CHANNELSTAFF_RelationShip set StaffID=:p1 where CustomerID=:p2";
+            session.CreateSQLQuery(sql)
+                    .SetParameter("p1", id)
+                    .SetParameter("p2", FID)
+                    .SetResultTransformer(new AliasToEntityMapResultTransformer())
+                    .List<dynamic>();
         }
 
         public dynamic QueryWxappUserByXCXOpenid(string phoneNumber)

@@ -123,6 +123,20 @@ namespace Api.Services.V1
         {
             Dao.QueryWxappUserEditXCXOpenid(phoneNumber,wxopenid);
         }
+
+        /// <summary>
+        /// 用户查询
+        /// </summary>
+        /// <param name="filter"></param>
+        public Response SelectUser(JObject filter)
+        {
+            if (filter["channelId"].ToString() == "-1")
+            {
+                filter["channelId"] = "";
+            }
+            return Dao.SelectUser(filter);
+        }
+
         public void QueryWxappUserEditFwxOpenid(string phoneNumber, string wxopenid)
         {
             Dao.QueryWxappUserEditFwxOpenid(phoneNumber, wxopenid);
@@ -418,6 +432,22 @@ namespace Api.Services.V1
                     Errcode = ExceptionHelper.UNKNOWN,
                     Errmsg = "职员不存在"
                 };
+            }
+        }
+
+        /// <summary>
+        /// 批量修改客服
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="filterStr"></param>
+        public void DatchEditKF(int id, string filterStr)
+        {
+            //IList<dynamic> activicyLists1 = new List<dynamic>();
+            //JObject filter = JObject.Parse(filterStr);
+            string[] sArray = filterStr.Split(',');
+            foreach (string FID in sArray)
+            {
+                Dao.DatchEditKF(id, FID);
             }
         }
 

@@ -123,47 +123,8 @@ namespace Api.Controllers.V1
         public Response Response([FromUri]string filterStr)
         {
             JObject filter = JObject.Parse(filterStr);
-            if (filter["channelId"].ToString() == "-1")
-            {
-                filter["channelId"] = "";
-            }
-
-            string sqlNO = "";
-            if (!string.IsNullOrWhiteSpace(filter["name"].ToString()))
-            {
-                sqlNO = $"where  (dbo.T_ESS_CHANNELSTAFF.KHNAME LIKE '%{filter["name"].ToString()}%' OR dbo.T_ESS_CHANNELSTAFF.FMOBILE LIKE '%{filter["name"].ToString()}%'  )  ";
-            }
-
-
-            ISession session = NHSessionProvider.GetCurrentSession();
-            var sql = @"  SELECT * FROM (SELECT ROW_NUMBER() over(order by dbo.T_ESS_CHANNELSTAFF.FID desc) XH, 
-                T_ESS_CHANNELSTAFF.FID, T_ESS_CHANNELSTAFF.KHNAME, T_ESS_CHANNELSTAFF.FMOBILE, 
-                T_ESS_CHANNELSTAFF_L.FJOB, T_ESS_CHANNELSTAFF_L.FROLEID, T_ESS_CHANNELSTAFF.FENABLE, 
-                T_ESS_CHANNELSTAFF.FQQ, T_ESS_CHANNELSTAFF.FTELE, A_ROLE.FPERMISSIONS, 
-                T_ESS_CHANNELSTAFF_RelationShip.StaffID, T_ESS_CHANNELSTAFF_1.KHNAME AS KFNAME
-				FROM      T_ESS_CHANNELSTAFF T_ESS_CHANNELSTAFF_1 INNER JOIN
-                T_ESS_CHANNELSTAFF_RelationShip ON 
-                T_ESS_CHANNELSTAFF_1.FID = T_ESS_CHANNELSTAFF_RelationShip.StaffID RIGHT OUTER JOIN
-                T_ESS_CHANNELSTAFF INNER JOIN
-                T_ESS_CHANNELSTAFF_L ON T_ESS_CHANNELSTAFF.FID = T_ESS_CHANNELSTAFF_L.FID INNER JOIN
-                A_ROLE ON T_ESS_CHANNELSTAFF_L.FROLEID = A_ROLE.FID ON 
-                T_ESS_CHANNELSTAFF_RelationShip.CustomerID = T_ESS_CHANNELSTAFF.FID" + sqlNO + ") t ";
-            sql += $"where XH > { (Convert.ToInt32(filter["page"]) - 1) * Convert.ToInt32(filter["limit"]) } and XH <= { (Convert.ToInt32(filter["page"])) * Convert.ToInt32(filter["limit"]) }";
-            //ISession session = NHSessionProvider.SessionFactory.OpenSession();
-            //var list = session.CreateSQLQuery(sql).List();//执行查询
-            IList<dynamic> activicyLists = session.CreateSQLQuery(sql)
-                    .SetResultTransformer(new AliasToEntityMapResultTransformer())
-                    .List<dynamic>();
-            var count = activicyLists.Count;
-            return new Response
-            {
-                Result = new
-                {
-                    activicyLists,
-                    count
-                }
-            };
-
+            return Service.SelectUser(filter);
+          
         }
 
         /// <summary>
@@ -178,14 +139,6 @@ namespace Api.Controllers.V1
         public Response Responses([FromUri]int id)
         {
             ISession session = NHSessionProvider.GetCurrentSession();
-            //var sql = @"SELECT ROW_NUMBER() over(order by dbo.T_ESS_CHANNELSTAFF.FID desc) XH, 
-            //    dbo.T_ESS_CHANNELSTAFF.FID, dbo.T_ESS_CHANNELSTAFF.KHNAME, dbo.T_ESS_CHANNELSTAFF.FMOBILE, 
-            //    dbo.T_ESS_CHANNELSTAFF_L.FJOB, dbo.T_ESS_CHANNELSTAFF_L.FROLEID, dbo.T_ESS_CHANNELSTAFF.FENABLE, 
-            //    dbo.T_ESS_CHANNELSTAFF.FQQ, dbo.T_ESS_CHANNELSTAFF.FTELE, dbo.A_ROLE.FPERMISSIONS
-            //    FROM      dbo.T_ESS_CHANNELSTAFF INNER JOIN
-            //    dbo.T_ESS_CHANNELSTAFF_L ON dbo.T_ESS_CHANNELSTAFF.FID = dbo.T_ESS_CHANNELSTAFF_L.FID INNER JOIN
-            //    dbo.A_ROLE ON dbo.T_ESS_CHANNELSTAFF_L.FROLEID = dbo.A_ROLE.FID where  dbo.T_ESS_CHANNELSTAFF.FID="+id;
-
             var sql = @"SELECT ROW_NUMBER() over(order by dbo.T_ESS_CHANNELSTAFF.FID desc) XH,T_ESS_CHANNELSTAFF.FID, T_ESS_CHANNELSTAFF.KHNAME, T_ESS_CHANNELSTAFF.FMOBILE, 
                 T_ESS_CHANNELSTAFF_L.FJOB, T_ESS_CHANNELSTAFF_L.FROLEID, T_ESS_CHANNELSTAFF.FENABLE, 
                 T_ESS_CHANNELSTAFF.FQQ, T_ESS_CHANNELSTAFF.FTELE, A_ROLE.FPERMISSIONS, 
@@ -198,14 +151,13 @@ namespace Api.Controllers.V1
                 A_ROLE ON T_ESS_CHANNELSTAFF_L.FROLEID = A_ROLE.FID ON
                 T_ESS_CHANNELSTAFF_RelationShip.CustomerID = T_ESS_CHANNELSTAFF.FID
                 WHERE(T_ESS_CHANNELSTAFF.FID = :p1)";
-           
-            //ISession session = NHSessionProvider.SessionFactory.OpenSession();
-            //var list = session.CreateSQLQuery(sql).List();//执行查询
+
+            
             IList<dynamic> activicyLists = session.CreateSQLQuery(sql)
-                    .SetParameter("p1",id)
+                    .SetParameter("p1", id)
                     .SetResultTransformer(new AliasToEntityMapResultTransformer())
                     .List<dynamic>();
-          
+
             return new Response
             {
                 Result = activicyLists,
@@ -237,11 +189,14 @@ namespace Api.Controllers.V1
         public Response ResponsessKF()
         {
             ISession session = NHSessionProvider.GetCurrentSession();
-            var sql = @"SELECT   T_ESS_CHANNELSTAFF.FID, T_ESS_CHANNELSTAFF.KHNAME
-                        FROM      T_ESS_CHANNELSTAFF INNER JOIN
-                        T_ESS_CHANNELSTAFF_L ON T_ESS_CHANNELSTAFF.FID = T_ESS_CHANNELSTAFF_L.FPKID INNER JOIN
-                        A_ROLE ON T_ESS_CHANNELSTAFF_L.FROLEID = A_ROLE.FID
-                        WHERE   (A_ROLE.FPERMISSIONS = '1')";
+            var sql = @"SELECT   cs.FID, cs.KHNAME, cs.FCREATEDATE, cs.ISNEW, cs.FMOBILE, cs.FTELE, cs.FQQ, cs.FWECHAT, cs.FENABLE
+                        FROM      dbo.T_ESS_CHANNELSTAFF AS cs INNER JOIN
+                                            (SELECT   dbo.T_ESS_CHANNELSTAFF.FID, dbo.T_ESS_CHANNELSTAFF.KHNAME
+                                             FROM      dbo.T_ESS_CHANNELSTAFF INNER JOIN
+                                                             dbo.T_ESS_CHANNELSTAFF_L ON 
+                                                             dbo.T_ESS_CHANNELSTAFF.FID = dbo.T_ESS_CHANNELSTAFF_L.FPKID INNER JOIN
+                                                             dbo.A_ROLE ON dbo.T_ESS_CHANNELSTAFF_L.FROLEID = dbo.A_ROLE.FID
+                                             WHERE   (dbo.A_ROLE.FPERMISSIONS = '1')) AS derivedtbl_1 ON cs.FID = derivedtbl_1.FID";
             IList<dynamic> activicyLists = session.CreateSQLQuery(sql)
                     .SetResultTransformer(new AliasToEntityMapResultTransformer())
                     .List<dynamic>();
@@ -252,18 +207,42 @@ namespace Api.Controllers.V1
             };
         }
 
+        /// <summary>
+        /// 更改客服批量修改
+        /// </summary>
+        /// <param name="id">被选中客服fid</param>
+        /// <param name="FID">用户fid</param>
+        /// <returns></returns>
         [HttpGet]
         [Transaction]
         [AllowAnonymous]
-        [Route("Edits")]   
+        [Route("DatchEditKF")]
+        public Response DatchEditKF([FromUri]int id, [FromUri]string filterStr)
+        {
+            Service.DatchEditKF(id, filterStr);
+
+
+            return new Response
+            {
+                Result = new
+                {
+                    id
+                }
+            };
+        }
+
+        [HttpGet]
+        [Transaction]
+        [AllowAnonymous]
+        [Route("Edits")]
         public Response Responsesss([FromUri]int id, [FromUri] int FID)
         {
             ISession session = NHSessionProvider.GetCurrentSession();
-             var ROLE = session.QueryOver<ARole>()
-                 .And(x => x.FID == id)
-                 .List()
-                 .FirstOrDefault();
-            var sql = @"update T_ESS_CHANNELSTAFF_L set FJOB='"+ ROLE.FNAME + "',FROLEID="+ ROLE.FID + " where FPKID=" + FID;
+            var ROLE = session.QueryOver<ARole>()
+                .And(x => x.FID == id)
+                .List()
+                .FirstOrDefault();
+            var sql = @"update T_ESS_CHANNELSTAFF_L set FJOB='" + ROLE.FNAME + "',FROLEID=" + ROLE.FID + " where FPKID=" + FID;
             var CHANNELSTAFF = session.CreateSQLQuery(sql)
                 .ExecuteUpdate();
             return new Response
@@ -279,7 +258,7 @@ namespace Api.Controllers.V1
         public Response ResponsesssS([FromUri]int id, [FromUri] int FID)
         {
             ISession session = NHSessionProvider.GetCurrentSession();
-            var sql = @"SELECT   dbo.A_ROLE.* FROM dbo.A_ROLE where FID="+id;
+            var sql = @"SELECT   dbo.A_ROLE.* FROM dbo.A_ROLE where FID=" + id;
             IList<dynamic> activicyLists = session.CreateSQLQuery(sql)
                     .SetResultTransformer(new AliasToEntityMapResultTransformer())
                     .List<dynamic>();
@@ -345,11 +324,11 @@ namespace Api.Controllers.V1
         public Response ResponsesssKF([FromUri]int id, [FromUri] int FID)
         {
             ISession session = NHSessionProvider.GetCurrentSession();
-            
+
             var sql = @"update T_ESS_CHANNELSTAFF_RelationShip set StaffID=:p1 where CustomerID=:p2";
             IList<dynamic> activicyLists1 = session.CreateSQLQuery(sql)
-                    .SetParameter("p1",id)
-                    .SetParameter("p2",FID)
+                    .SetParameter("p1", id)
+                    .SetParameter("p2", FID)
                     .SetResultTransformer(new AliasToEntityMapResultTransformer())
                     .List<dynamic>();
             return new Response
@@ -395,7 +374,6 @@ namespace Api.Controllers.V1
             {
                 Result = Relation
             };
-
 
         }
     }
