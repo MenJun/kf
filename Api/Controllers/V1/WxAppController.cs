@@ -127,7 +127,7 @@ namespace Api.Controllers.V1
         [Route("upload/service")]
         public Response UploadServiceImg()
         {
-            return WxappService.UploadServiceImg();
+            return WxappService.UploadServiceImg(); 
         }
 
         /// <summary>
