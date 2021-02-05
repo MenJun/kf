@@ -911,7 +911,7 @@ namespace Api.Controllers.V1
             return results;
         }
         /// <summary>
-        /// 判断用户是否在此群里
+        /// 判断用户是否在此群里1
         /// </summary>
         /// <returns></returns>
         [Route("zxkh_boolgroupuser")]
