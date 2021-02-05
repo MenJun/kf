@@ -1353,33 +1353,35 @@ namespace Api.Controllers.V1
                 var results = WxappService.ZXKH_QueryPicture(obj.XCXFromOpenId);
                 obj.PicUrl = (string)results["PICTURE"];
                 obj.KHNAME = (string)results["KHNAME"];
-                var staff = WxappService.ZXKH_QueryFID(obj.XCXToOpenId);
-                if (staff != null)
-                {
-                    string fid = staff["FID"].ToString();
-                    WxappService.ZXKH_WriteTxt("获取用户的fid");
-                    WxappService.ZXKH_WriteTxt(fid);
-                    dynamic result = WxappService.ZXKH_SendWebSocket(fid);
-                    if (result != null)
-                    {
-                        var hub = GlobalHost.ConnectionManager.GetHubContext<MessageHub>();
-                        var users = (string)result["ConnectionID"];
-                        WxappService.ZXKH_WriteTxt("获取用户的ConnectionID");
-                        WxappService.ZXKH_WriteTxt(users);
-                        //hub.Clients.Client(users).notify(obj);
-                        hub.Clients.All.notify(obj);
-                    }
-                }
-                else
-                {
-                    var group_connectionid = WxappService.ZXKH_GroupQueryFID(obj.XCXToOpenId);
-                    if (group_connectionid.Count != 0)
-                    {
-                        var hub = GlobalHost.ConnectionManager.GetHubContext<MessageHub>();
-                        hub.Clients.Clients(group_connectionid).notify(obj);
-                       
-                    }
-                }
+                var hub = GlobalHost.ConnectionManager.GetHubContext<MessageHub>();
+                hub.Clients.All.notify(obj);
+                //var staff = WxappService.ZXKH_QueryFID(obj.XCXToOpenId);
+                //if (staff != null)
+                //{
+                //    string fid = staff["FID"].ToString();
+                //    WxappService.ZXKH_WriteTxt("获取用户的fid");
+                //    WxappService.ZXKH_WriteTxt(fid);
+                //    dynamic result = WxappService.ZXKH_SendWebSocket(fid);
+                //    if (result != null)
+                //    {
+                //        var hub = GlobalHost.ConnectionManager.GetHubContext<MessageHub>();
+                //        var users = (string)result["ConnectionID"];
+                //        WxappService.ZXKH_WriteTxt("获取用户的ConnectionID");
+                //        WxappService.ZXKH_WriteTxt(users);
+                //        //hub.Clients.Client(users).notify(obj);
+                //        hub.Clients.All.notify(obj);
+                //    }
+                //}
+                //else
+                //{
+                //    var group_connectionid = WxappService.ZXKH_GroupQueryFID(obj.XCXToOpenId);
+                //    if (group_connectionid.Count != 0)
+                //    {
+                //        var hub = GlobalHost.ConnectionManager.GetHubContext<MessageHub>();
+                //        hub.Clients.Clients(group_connectionid).notify(obj);
+
+                //    }
+                //}
 
                 //var hub = GlobalHost.ConnectionManager.GetHubContext<MessageHub>();
                 //var data = new
