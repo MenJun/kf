@@ -3379,7 +3379,7 @@ namespace Api.Services.V1
 
             foreach (var item in result)
             {
-                var openid = (string)item["FWXOPENID"];
+                var openid = (string)item["XCXOPENID"];
                 var count = RedisHelper.StringGet(openid);
                 item["count"] = count == "0" ? "" : count;
                 item["diffMinutes"] = DateTime.Now.Subtract(TimeStampHelper.FromTimeStamp((long)item["createtime"]).AddHours(-8)).TotalMinutes;
@@ -3478,9 +3478,13 @@ namespace Api.Services.V1
 
         public async Task<IList<CustomerServiceMessageVO>> pc_QueryCustomerMsg(string wxopenid, int page, int limit)
         {
-            var result = WxappDao.pc_QueryCustomerMessage(wxopenid, page, limit);
-
-            IList<CustomerServiceMessageVO> vos = AutoMapper.Mapper.Map<List<CustomerServiceMessageVO>>(result);
+            //查询客户关联的客服
+            var relation_KF = WxappDao.relation(wxopenid);
+            //消息查询
+            //var result = WxappDao.pc_QueryCustomerMessage(wxopenid, page, limit);
+            IList<CustomerServiceMessageVO> vos;
+            var result = WxappDao.ZXKH_QueryCustomerMessage(wxopenid, relation_KF, page, limit);
+            vos = AutoMapper.Mapper.Map<List<CustomerServiceMessageVO>>(result);
             foreach (var item in vos)
             {
                 if (item.MsgType == TENCENT_MSG_TYPE_CARD)
