@@ -617,6 +617,7 @@ namespace Api.Controllers.V1
         [Route("zxkh_customers")]
         [HttpGet]
         [Transaction]
+        [AllowAnonymous]
         public async Task<Response> ZXKH_QueryCustomers(string fmobile)
         {
             var result = await WxappService.ZXKH_QueryCustomers(fmobile);
