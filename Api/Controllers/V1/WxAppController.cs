@@ -1283,86 +1283,122 @@ namespace Api.Controllers.V1
         [Transaction]
         public Response ZXKH_sendMsg([FromBody]CustomerServiceMessage obj)
         {
-            obj.CreateTime = WxappService.ZXKH_ConvertDateTimeInt(DateTime.Now);
-            if (obj.MsgType == "text")
+            if (obj.FromUserName == "-1" && obj.XCXToOpenId.Length > 28)
             {
-                if (obj.ToUserName != null)
-                {
-                    dynamic user = WxappService.ZXKH_OpenidToName(obj.XCXFromOpenId);
-                    WxappService.ZXKH_SendText(obj.ToUserName, obj.Content, (string)user["KHNAME"]);
-                }
-            }
-            if (obj.MsgType == "voice")
-            {
-                if (obj.ToUserName != null)
-                {
-                    dynamic user = WxappService.ZXKH_OpenidToName(obj.XCXFromOpenId);
-                    //var media_id = WxappService.ZXKH_UploadImgByB64(obj.Content);
-                    //WxappService.ZXKH_SendVoice(obj.ToUserName, media_id);
-                    WxappService.ZXKH_SendVoice(obj.ToUserName, user["KHNAME"]);
-                }
-                obj.Content = WxappService.ZXKH_Base64ToFile(obj.Content, ".mp3");
-            }
-            if (obj.MsgType == "image")
-            {
-                if (obj.ToUserName != null)
-                {
-                    dynamic user = WxappService.ZXKH_OpenidToName(obj.XCXFromOpenId);
-                    //var media_id = WxappService.ZXKH_UploadImgByB64(obj.Content);
-                    //WxappService.ZXKH_SendImage(obj.ToUserName, media_id);
-                    WxappService.ZXKH_SendImage(obj.ToUserName, user["KHNAME"]);
-                }
-                obj.Content = WxappService.ZXKH_Base64ToFile(obj.Content, ".jpg");
-            }
-            WxappService.ZXKH_savemessage(obj);
+                // 获取客服
+                obj.XCXFromOpenId = WxappService.pc_kf_Lastgroup(obj.XCXToOpenId);
 
-            //获取发送者的头像
-            var results = WxappService.ZXKH_QueryPicture(obj.XCXFromOpenId);
-            obj.PicUrl = (string)results["PICTURE"];
-            obj.KHNAME = (string)results["KHNAME"];
-            var staff = WxappService.ZXKH_QueryFID(obj.XCXToOpenId);
-            if (staff != null)
-            {
-                string fid = staff["FID"].ToString();
-                WxappService.ZXKH_WriteTxt("获取用户的fid");
-                WxappService.ZXKH_WriteTxt(fid);
-                dynamic result = WxappService.ZXKH_SendWebSocket(fid);
-                if (result != null)
-                {
+                
+                obj.CreateTime = WxappService.ZXKH_ConvertDateTimeInt(DateTime.Now);
+               
+                WxappService.ZXKH_savemessage(obj);
+
+                //if (obj.XCXToOpenId.Length != 28)
+                //{
                     var hub = GlobalHost.ConnectionManager.GetHubContext<MessageHub>();
-                    var users = (string)result["ConnectionID"];
-                    WxappService.ZXKH_WriteTxt("获取用户的ConnectionID");
-                    WxappService.ZXKH_WriteTxt(users);
-                    hub.Clients.Client(users).notify(obj);
-                }
+                    hub.Clients.All.notify(WxappService.pc_Que(obj.XCXToOpenId));
+                //}
+                //else
+                //{
+                //    var hub = GlobalHost.ConnectionManager.GetHubContext<MessageHub>();
+                //    hub.Clients.All.notify(WxappService.pc_QueryCustomerInfo(obj.ToUserName));
+                //}
+                //hub.Clients.All("1111");
+
+                return new Response
+                {
+                    Result = new
+                    {
+                        obj
+                    }
+                };
             }
             else
             {
-                var group_connectionid = WxappService.ZXKH_GroupQueryFID(obj.XCXToOpenId);
-                if (group_connectionid.Count != 0)
+                obj.CreateTime = WxappService.ZXKH_ConvertDateTimeInt(DateTime.Now);
+                if (obj.MsgType == "text")
                 {
-                    var hub = GlobalHost.ConnectionManager.GetHubContext<MessageHub>();
-                    hub.Clients.Clients(group_connectionid).notify(obj);
+                    if (obj.ToUserName != null)
+                    {
+                        dynamic user = WxappService.ZXKH_OpenidToName(obj.XCXFromOpenId);
+                        WxappService.ZXKH_SendText(obj.ToUserName, obj.Content, (string)user["KHNAME"]);
+                    }
                 }
+                if (obj.MsgType == "voice")
+                {
+                    if (obj.ToUserName != null)
+                    {
+                        dynamic user = WxappService.ZXKH_OpenidToName(obj.XCXFromOpenId);
+                        //var media_id = WxappService.ZXKH_UploadImgByB64(obj.Content);
+                        //WxappService.ZXKH_SendVoice(obj.ToUserName, media_id);
+                        WxappService.ZXKH_SendVoice(obj.ToUserName, user["KHNAME"]);
+                    }
+                    obj.Content = WxappService.ZXKH_Base64ToFile(obj.Content, ".mp3");
+                }
+                if (obj.MsgType == "image")
+                {
+                    if (obj.ToUserName != null)
+                    {
+                        dynamic user = WxappService.ZXKH_OpenidToName(obj.XCXFromOpenId);
+                        //var media_id = WxappService.ZXKH_UploadImgByB64(obj.Content);
+                        //WxappService.ZXKH_SendImage(obj.ToUserName, media_id);
+                        WxappService.ZXKH_SendImage(obj.ToUserName, user["KHNAME"]);
+                    }
+                    obj.Content = WxappService.ZXKH_Base64ToFile(obj.Content, ".jpg");
+                }
+                WxappService.ZXKH_savemessage(obj);
+
+                //获取发送者的头像
+                var results = WxappService.ZXKH_QueryPicture(obj.XCXFromOpenId);
+                obj.PicUrl = (string)results["PICTURE"];
+                obj.KHNAME = (string)results["KHNAME"];
+                var staff = WxappService.ZXKH_QueryFID(obj.XCXToOpenId);
+                if (staff != null)
+                {
+                    string fid = staff["FID"].ToString();
+                    WxappService.ZXKH_WriteTxt("获取用户的fid");
+                    WxappService.ZXKH_WriteTxt(fid);
+                    dynamic result = WxappService.ZXKH_SendWebSocket(fid);
+                    if (result != null)
+                    {
+                        var hub = GlobalHost.ConnectionManager.GetHubContext<MessageHub>();
+                        var users = (string)result["ConnectionID"];
+                        WxappService.ZXKH_WriteTxt("获取用户的ConnectionID");
+                        WxappService.ZXKH_WriteTxt(users);
+                        //hub.Clients.Client(users).notify(obj);
+                        hub.Clients.All.notify(obj);
+                    }
+                }
+                else
+                {
+                    var group_connectionid = WxappService.ZXKH_GroupQueryFID(obj.XCXToOpenId);
+                    if (group_connectionid.Count != 0)
+                    {
+                        var hub = GlobalHost.ConnectionManager.GetHubContext<MessageHub>();
+                        hub.Clients.Clients(group_connectionid).notify(obj);
+                       
+                    }
+                }
+
+                //var hub = GlobalHost.ConnectionManager.GetHubContext<MessageHub>();
+                //var data = new
+                //{
+                //    name = 1,
+                //    age = 2
+                //};
+                //hub.Clients.All(Newtonsoft.Json.JsonConvert.SerializeObject(data));
+                //hub.Clients.All("1111");
+
+
+                return new Response
+                {
+                    Result = new
+                    {
+                        obj
+                    }
+                };
             }
-            
-            //var hub = GlobalHost.ConnectionManager.GetHubContext<MessageHub>();
-            //var data = new
-            //{
-            //    name = 1,
-            //    age = 2
-            //};
-            //hub.Clients.All(Newtonsoft.Json.JsonConvert.SerializeObject(data));
-            //hub.Clients.All("1111");
 
-
-            return new Response
-            {
-                Result = new
-                {
-                    obj
-                }
-            };
         }
         public static void ZXKH_SendWeb(CustomerServiceMessage WxXmlModels,string users)
         {
