@@ -2069,6 +2069,12 @@ namespace Api.Services.V1
             WxappDao.ZXKH_EditGroupName(groupname, groupno);
             return true;
         }
+        public dynamic ZXKH_BoolGroupUse(string useropenid, string groupno)
+        {
+            dynamic results =WxappDao.ZXKH_BoolGroupUse(useropenid, groupno);
+            return results;
+        }
+        
 
         public Response ZXKH_UserWebSocket(string userID,string connectionID)
         {

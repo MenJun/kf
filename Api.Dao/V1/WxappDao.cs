@@ -1825,6 +1825,24 @@ GROUP BY derivedtbl_1.FNAME, derivedtbl_1.FWXOPENID, derivedtbl_1.Expr2, derived
                    .SetParameter("p2", groupno)
                    .ExecuteUpdate();
         }
+        public dynamic ZXKH_BoolGroupUse(string useropenid, string groupno)
+        {
+            ISession session = NHSessionProvider.GetCurrentSession();
+            string sql = @"SELECT     dbo.T_ESS_CHANNELSTAFF_GROUP.GroupName, dbo.T_ESS_CHANNELSTAFF_GROUPSHIP.GroupNo, dbo.T_ESS_CHANNELSTAFF.FID,                     dbo.T_ESS_CHANNELSTAFF.XCXOPENID, 
+                      dbo.T_ESS_CHANNELSTAFF.KHNAME
+                      FROM         dbo.T_ESS_CHANNELSTAFF_GROUPSHIP INNER JOIN
+                      dbo.T_ESS_CHANNELSTAFF_GROUP ON dbo.T_ESS_CHANNELSTAFF_GROUPSHIP.GroupNo = dbo.T_ESS_CHANNELSTAFF_GROUP.GroupNo INNER JOIN
+                      dbo.T_ESS_CHANNELSTAFF ON dbo.T_ESS_CHANNELSTAFF_GROUPSHIP.UserFID = dbo.T_ESS_CHANNELSTAFF.FID
+                      WHERE     (dbo.T_ESS_CHANNELSTAFF_GROUPSHIP.GroupNo = :p2) AND (dbo.T_ESS_CHANNELSTAFF.XCXOPENID = :p1)";
+            var result = session.CreateSQLQuery(sql)
+                   .SetParameter("p1", useropenid)
+                   .SetParameter("p2", groupno)
+                   .SetResultTransformer(new AliasToEntityMapResultTransformer())
+                   .List<dynamic>()
+                   .FirstOrDefault();
+            return result;
+        }
+        
 
         /// <summary>
         /// 群组踢人

@@ -911,6 +911,26 @@ namespace Api.Controllers.V1
             return results;
         }
         /// <summary>
+        /// 判断用户是否在此群里
+        /// </summary>
+        /// <returns></returns>
+        [Route("zxkh_boolgroupuser")]
+        [HttpGet]
+        [AllowAnonymous]
+        [Transaction]
+        public bool ZXKH_BoolGroupUser(string useropenid, string groupno)
+        {
+            dynamic result = WxappService.ZXKH_BoolGroupUse(useropenid, groupno);
+            if (result != null)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        /// <summary>
         /// 用户绑定connectionid  测试一
         /// </summary>
         /// <returns></returns>
