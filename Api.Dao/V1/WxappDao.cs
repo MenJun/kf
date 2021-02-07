@@ -2151,25 +2151,46 @@ WHERE a.FWXOPENID = :p1";
                 .List<dynamic>();
         }
 
-        public IList<CustomerServiceMessage> pc_QueryCustomerMessage(string wxopenid, int page, int limit)
+        public IList<CustomerServiceMessage> pc_QueryCustomerMessage(string wxopenid, string openid, int page, int limit)
         {
             ISession session = NHSessionProvider.GetCurrentSession();
-            var sql = @"SELECT a.Id, a.MsgId, a.ToUserName, a.FromUserName, a.CreateTime, a.MsgType, a.Content, a.Title, a.AppId, a.PicUrl, a.PagePath, a.MediaId, a.ThumbUrl, a.ThumbMediaId,a.XCXFromOpenId,a.XCXToOpenId
-                        FROM(SELECT ROW_NUMBER() OVER (ORDER BY t.Id DESC) xh, t.Id, t.MsgId, t.ToUserName, ISNULL(cs.KHNAME, t.FromUserName) FromUserName, t.CreateTime, t.MsgType, t.Content, t.Title, t.AppId, t.PicUrl, t.PagePath, t.MediaId, ca.PICTURE ThumbUrl, t.ThumbMediaId,t.XCXFromOpenId,t.XCXToOpenId
-                             FROM(SELECT *
-                                  FROM dbo.T_CUS_SERVER_MSG
-                                  WHERE XCXFromOpenId= :p1
-                                  UNION
-                                  SELECT *
-                                  FROM dbo.T_CUS_SERVER_MSG
-                                  WHERE XCXToOpenId=:p1) t
-                                 LEFT JOIN T_ESS_CHANNELSTAFF cs ON CAST(cs.FID AS VARCHAR(20))=t.FromUserName
-                                 LEFT JOIN T_ESS_CHANNELSTAFF_AVATAR ca ON ca.STAFFID=cs.FID) a
-                        WHERE a.xh> :p2 AND xh<= :p3 ORDER BY Id";
+            //var sql = @"SELECT a.Id, a.MsgId, a.ToUserName, a.FromUserName, a.CreateTime, a.MsgType, a.Content, a.Title, a.AppId, a.PicUrl, a.PagePath, a.MediaId, a.ThumbUrl, a.ThumbMediaId,a.XCXFromOpenId,a.XCXToOpenId
+            //            FROM(SELECT ROW_NUMBER() OVER (ORDER BY t.Id DESC) xh, t.Id, t.MsgId, t.ToUserName, ISNULL(cs.KHNAME, t.FromUserName) FromUserName, t.CreateTime, t.MsgType, t.Content, t.Title, t.AppId, t.PicUrl, t.PagePath, t.MediaId, ca.PICTURE ThumbUrl, t.ThumbMediaId,t.XCXFromOpenId,t.XCXToOpenId
+            //                 FROM(SELECT *
+            //                      FROM dbo.T_CUS_SERVER_MSG
+            //                      WHERE XCXFromOpenId= :p1
+            //                      UNION
+            //                      SELECT *
+            //                      FROM dbo.T_CUS_SERVER_MSG
+            //                      WHERE XCXToOpenId=:p1) t
+            //                     LEFT JOIN T_ESS_CHANNELSTAFF cs ON CAST(cs.FID AS VARCHAR(20))=t.FromUserName
+            //                     LEFT JOIN T_ESS_CHANNELSTAFF_AVATAR ca ON ca.STAFFID=cs.FID) a
+            //            WHERE a.xh> :p2 AND xh<= :p3 ORDER BY Id";
+            string sql = @"SELECT a.Id, a.MsgId, a.XCXToOpenId, a.XCXFromOpenId, a.CreateTime, a.MsgType, a.Content, a.Title, a.AppId, a.PicUrl, a.PagePath, a.MediaId, a.ThumbUrl, a.ThumbMediaId, a.Format, a.Recognition
+        FROM(SELECT ROW_NUMBER() OVER (ORDER BY t.Id DESC) xh, t.Id, t.MsgId, t.XCXToOpenId, ISNULL(cs.KHNAME, t.XCXFromOpenId) XCXFromOpenId, t.CreateTime, t.MsgType, t.Content, t.Title, t.AppId, t.PicUrl, t.PagePath, t.MediaId, ca.PICTURE ThumbUrl, t.ThumbMediaId, t.Format, t.Recognition
+        FROM(
+           SELECT *
+          FROM dbo.T_CUS_SERVER_MSG
+          WHERE XCXFromOpenId='-1' and XCXToOpenId= :p0
+          UNION
+          SELECT *
+          FROM dbo.T_CUS_SERVER_MSG
+          WHERE XCXFromOpenId=:p1 and XCXToOpenId= :p2
+          UNION
+          SELECT *
+          FROM dbo.T_CUS_SERVER_MSG
+          WHERE XCXToOpenId=:p3 and XCXFromOpenId=:p4) t
+         LEFT JOIN T_ESS_CHANNELSTAFF cs ON CAST(cs.FID AS VARCHAR(20))=t.XCXFromOpenId
+         LEFT JOIN T_ESS_CHANNELSTAFF_AVATAR ca ON ca.STAFFID=cs.FID) a
+        WHERE a.xh>:p5 AND xh<=:p6 ORDER BY Id";
             return session.CreateSQLQuery(sql)
+                .SetParameter("p0", wxopenid)
                 .SetParameter("p1", wxopenid)
-                .SetParameter("p2", (page - 1) * limit)
-                .SetParameter("p3", page * limit)
+                .SetParameter("p2", openid)
+                .SetParameter("p3", wxopenid)
+                .SetParameter("p4", openid)
+                .SetParameter("p5", (page - 1) * limit)
+                .SetParameter("p6", page * limit)
                 .SetResultTransformer(new AliasToBeanResultTransformer(typeof(CustomerServiceMessage)))
                 .List<CustomerServiceMessage>();
         }

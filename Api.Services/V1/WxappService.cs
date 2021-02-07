@@ -3481,9 +3481,9 @@ namespace Api.Services.V1
             //查询客户关联的客服
             var relation_KF = WxappDao.relation(wxopenid);
             //消息查询
-            //var result = WxappDao.pc_QueryCustomerMessage(wxopenid, page, limit);
+            var result = WxappDao.pc_QueryCustomerMessage(wxopenid, relation_KF, page, limit);
             IList<CustomerServiceMessageVO> vos;
-            var result = WxappDao.ZXKH_QueryCustomerMessage(wxopenid, relation_KF, page, limit);
+            //var result = WxappDao.ZXKH_QueryCustomerMessage(wxopenid, relation_KF, page, limit);
             vos = AutoMapper.Mapper.Map<List<CustomerServiceMessageVO>>(result);
             foreach (var item in vos)
             {
