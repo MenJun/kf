@@ -614,6 +614,11 @@ namespace Api.Controllers.V1
             return WxappService.ZXKH_GetOpenId(code);
         }
 
+        /// <summary>
+        /// 微信小程序-所有的用户消息，通过手机号查询客服客户关联
+        /// </summary>
+        /// <param name="fmobile">用户的手机号</param>
+        /// <returns></returns>
         [Route("zxkh_customers")]
         [HttpGet]
         [Transaction]
@@ -671,9 +676,9 @@ namespace Api.Controllers.V1
             return results;
         }
         /// <summary>
-        /// 我的所有消息，通过手机号码查询
+        /// 微信小程序-我的所有消息，通过手机号码查询
         /// </summary>
-        /// <param name="fmobile"></param>
+        /// <param name="fmobile">用户的手机号</param>
         /// <returns></returns>
         [Route("zxkh_mymessage")]
         [HttpGet]
@@ -696,8 +701,9 @@ namespace Api.Controllers.V1
 
 
         /// <summary>
-        /// 好友列表
+        /// 微信小程序-好友列表，通过手机号查询
         /// </summary>
+        /// <param name="fmobile">用户手机号</param>
         /// <returns></returns>
         [Route("zxkh_friends")]
         [HttpGet]
@@ -709,7 +715,7 @@ namespace Api.Controllers.V1
             return result;
         }
         /// <summary>
-        /// 查看好友申请
+        /// 微信小程序-查看好友申请
         /// </summary>
         /// <param name="fmobile">用户手机号码</param>
         /// <returns></returns>
@@ -725,8 +731,9 @@ namespace Api.Controllers.V1
         }
 
         /// <summary>
-        /// 群组列表
+        /// 微信小程序-通过手机号查询用户的所有群组
         /// </summary>
+        /// <param name="fmobile">用户的手机号</param>
         /// <returns></returns>
         [Route("zxkh_grouplist")]
         [HttpGet]
@@ -738,7 +745,7 @@ namespace Api.Controllers.V1
             return result;
         }
         /// <summary>
-        /// 所有群组列表
+        /// 微信小程序-所有的群组列表
         /// </summary>
         /// <returns></returns>
         [Route("zxkh_allgrouplist")]
@@ -754,9 +761,9 @@ namespace Api.Controllers.V1
 
 
         /// <summary>
-        /// 通过手机号码查询此人
+        /// 微信小程序-通过手机号码查询此人
         /// </summary>
-        /// <param name="fmobile"></param>
+        /// <param name="fmobile">用户输入的手机号</param>
         /// <returns></returns>
         [Route("zxkh_queryuser")]
         [HttpGet]
@@ -768,7 +775,7 @@ namespace Api.Controllers.V1
             return results;
         }
         /// <summary>
-        /// 查找好友关系
+        /// 微信小程序-查找好友关系
         /// </summary>
         /// <param name="user">用户fid</param>
         /// <param name="userfriend">用户查找的fid</param>
@@ -784,7 +791,7 @@ namespace Api.Controllers.V1
             return results;
         }
         /// <summary>
-        /// 发送好友申请
+        /// 微信小程序-发送好友申请
         /// </summary>
         /// <param name="user">用户fid</param>
         /// <param name="userfriend">用户查找的fid</param>
@@ -799,10 +806,10 @@ namespace Api.Controllers.V1
         }
 
         /// <summary>
-        /// 添加好友关系
+        /// 微信小程序-用户同意好友申请
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="userfriend"></param>
+        /// <param name="user">用户的fid</param>
+        /// <param name="userfriend">申请好友关系的用户fid</param>
         /// <returns></returns>
         [Route("zxkh_friendadd")]
         [HttpGet]
@@ -814,9 +821,9 @@ namespace Api.Controllers.V1
         }
 
         /// <summary>
-        /// 创建群组
+        /// 微信小程序-创建群组
         /// </summary>
-        /// <param name="array"></param>
+        /// <param name="array">用户的fid，数组</param>
         /// <returns></returns>
         [Route("zxkh_groupcreat")]
         [HttpGet]
@@ -828,10 +835,10 @@ namespace Api.Controllers.V1
         }
 
         /// <summary>
-        /// 群组踢人
+        /// 微信小程序-群组踢人或自己退出群聊
         /// </summary>
-        /// <param name="array"></param>
-        /// <returns></returns>
+        /// <param name="array">用户的fid，数组</param>
+        /// <param name="groupno">群编号</param>
         [Route("zxkh_groupremove")]
         [HttpGet]
         [AllowAnonymous]
@@ -841,10 +848,10 @@ namespace Api.Controllers.V1
             WxappService.ZXKH_GroupRemove(array, groupno);
         }
         /// <summary>
-        /// 群组邀人
+        /// 微信小程序-群组邀请用户
         /// </summary>
-        /// <param name="array"></param>
-        /// <returns></returns>
+        /// <param name="array">被邀请的人员，数组</param>
+        /// <param name="groupno">群编号</param>
         [Route("zxkh_groupadd")]
         [HttpGet]
         [AllowAnonymous]
@@ -855,9 +862,9 @@ namespace Api.Controllers.V1
         }
 
         /// <summary>
-        /// 群作废
+        /// 微信小程序-群创始人退出解散群，群作废
         /// </summary>
-        /// <param name="groupno"></param>
+        /// <param name="groupno">群编号</param>
         /// <returns></returns>
         [Route("zxkh_groupvoid")]
         [HttpGet]
@@ -867,9 +874,11 @@ namespace Api.Controllers.V1
         {
             WxappService.ZXKH_GroupVoid(groupno);
         }
+
         /// <summary>
-        /// 群管理头像区
+        /// 微信小程序-群管理头像区
         /// </summary>
+        /// <param name="groupno">群编号</param>
         /// <returns></returns>
         [Route("zxkh_groupmanagement")]
         [HttpGet]
@@ -883,8 +892,9 @@ namespace Api.Controllers.V1
         }
 
         /// <summary>
-        /// 群资料管理
+        /// 微信小程序-群资料管理-目前只有群名称名称
         /// </summary>
+        /// <param name="groupno">群编号</param>
         /// <returns></returns>
         [Route("zxkh_groupinformation")]
         [HttpGet]
@@ -898,8 +908,10 @@ namespace Api.Controllers.V1
         }
 
         /// <summary>
-        /// 群名称编辑
+        /// 微信小程序-群名称编辑
         /// </summary>
+        /// <param name="groupname">群名称</param>
+        /// <param name="groupno">群编号</param>
         /// <returns></returns>
         [Route("zxkh_editgroupname")]
         [HttpGet]
@@ -911,9 +923,12 @@ namespace Api.Controllers.V1
 
             return results;
         }
+
         /// <summary>
-        /// 判断用户是否在此群里
+        /// 微信小程序-判断用户是否在此群里，目前用于实现群的实时通讯
         /// </summary>
+        /// <param name="useropenid">用户的openid</param>
+        /// <param name="groupno">群编号</param>
         /// <returns></returns>
         [Route("zxkh_boolgroupuser")]
         [HttpGet]
@@ -973,28 +988,6 @@ namespace Api.Controllers.V1
             //var hub = GlobalHost.ConnectionManager.GetHubContext<MessageHub>();
             //hub.Clients.All.notify(result);
         }
-        /// <summary>
-        /// 用户发送
-        /// </summary>
-        /// <returns></returns>
-        [Route("sendwebsockets")]
-        [HttpGet]
-        [AllowAnonymous]
-        [Transaction]
-        public void ZXKH_SendMessage()
-        {
-
-            var hub = GlobalHost.ConnectionManager.GetHubContext<MessageHub>();
-            var data = new
-            {
-                name = 1,
-                age = 2
-            };
-            //hub.Clients.All(Newtonsoft.Json.JsonConvert.SerializeObject(data));
-            hub.Clients.All.notify(data);
-        }
-
-
 
         [Route("zxkh_khcustomer")]
         [HttpGet]
@@ -1010,10 +1003,10 @@ namespace Api.Controllers.V1
         /// <summary>
         /// 查询客户聊天记录
         /// </summary>
-        /// <param name="wxopenid"></param>
-        /// <param name="page"></param>
-        /// <param name="openid"></param>
-        /// <param name="limit"></param>
+        /// <param name="wxopenid">好友小程序openid</param>
+        /// <param name="page">页</param>
+        /// <param name="openid">用户小程序openid</param>
+        /// <param name="limit">一页多少</param>
         /// <returns></returns>
         [Route("zxkh_customerMsg")]
         [AllowAnonymous]
@@ -1026,9 +1019,9 @@ namespace Api.Controllers.V1
             return result;
         }
         /// <summary>
-        /// 查询当前群聊聊天记录
+        /// 微信小程序-查询当前群聊聊天记录
         /// </summary>
-        /// <param name="wxopenid"></param>
+        /// <param name="wxopenid">群编号</param>
         /// <param name="page"></param>
         /// <param name="limit"></param>
         /// <returns></returns>
@@ -1043,7 +1036,11 @@ namespace Api.Controllers.V1
             return result;
         }
 
-
+        /// <summary>
+        /// 微信小程序-查询用户最后一条消息，暂时无用
+        /// </summary>
+        /// <param name="wxopenid">用户小程序openid</param>
+        /// <returns></returns>
         [Route("zxkh_customer/lastmsg")]
         [HttpGet]
         [Transaction]
@@ -1054,6 +1051,12 @@ namespace Api.Controllers.V1
             return result;
         }
 
+        /// <summary>
+        /// 微信小程序-微信小程序用户授权获取头像后进行修改
+        /// </summary>
+        /// <param name="id">用户fid</param>
+        /// <param name="wxPayload">用户新的名称和头像</param>
+        /// <returns></returns>
         [Route("zxkh_staff/{id}/update")]
         [HttpPost]
         [Transaction]
@@ -1294,9 +1297,9 @@ namespace Api.Controllers.V1
             //用户发送信息保存到数据库
         }
         /// <summary>
-        /// 发送消息给用户
+        /// 微信小程序-用户发送消息给用户，包括到公众号
         /// </summary>
-        /// <param name="obj"></param>
+        /// <param name="obj">用户发送的消息包</param>
         /// <returns></returns>
         [AllowAnonymous]
         [Route("zxkh_sendMsg")]
@@ -1422,11 +1425,6 @@ namespace Api.Controllers.V1
                 };
             }
 
-        }
-        public static void ZXKH_SendWeb(CustomerServiceMessage WxXmlModels,string users)
-        {
-            var hub = GlobalHost.ConnectionManager.GetHubContext<MessageHub>();
-            hub.Clients.Client(users).notify(WxXmlModels);
         }
 
         /// <summary>
