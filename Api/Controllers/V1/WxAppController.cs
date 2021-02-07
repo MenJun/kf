@@ -1306,11 +1306,11 @@ namespace Api.Controllers.V1
         [HttpPost]
         [Transaction]
         public Response ZXKH_sendMsg([FromBody]CustomerServiceMessage obj)
-        {
+          {
             if (obj.FromUserName == "-1" && obj.XCXToOpenId.Length > 28)
             {
                 // 获取客服
-                obj.XCXFromOpenId = WxappService.pc_kf_Lastgroup(obj.XCXToOpenId);
+                //obj.XCXFromOpenId = WxappService.pc_kf_Lastgroup(obj.XCXToOpenId);
 
                 
                 obj.CreateTime = WxappService.ZXKH_ConvertDateTimeInt(DateTime.Now);
@@ -1345,7 +1345,7 @@ namespace Api.Controllers.V1
                     if (obj.ToUserName != null)
                     {
                         dynamic user = WxappService.ZXKH_OpenidToName(obj.XCXFromOpenId);
-                        WxappService.ZXKH_SendText(obj.ToUserName, obj.Content, (string)user["KHNAME"]);
+                        //WxappService.ZXKH_SendText(obj.ToUserName, obj.Content, (string)user["KHNAME"]);
                     }
                 }
                 if (obj.MsgType == "voice")
@@ -1509,11 +1509,10 @@ namespace Api.Controllers.V1
         {
 
 
-            if (obj.XCXToOpenId.Length != 28)
-            {
-                obj.XCXFromOpenId = WxappService.pc_kf_Lastgroup(obj.XCXToOpenId);
-
-            }
+            //if (obj.XCXToOpenId.Length != 28)
+            //{
+            //    obj.XCXFromOpenId = WxappService.pc_kf_Lastgroup(obj.XCXToOpenId);
+            //}
             obj.CreateTime = WxappService.ZXKH_ConvertDateTimeInt(DateTime.Now);
             if (obj.MsgType == "text")
             {
