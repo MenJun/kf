@@ -1345,7 +1345,7 @@ namespace Api.Controllers.V1
                     if (obj.ToUserName != null)
                     {
                         dynamic user = WxappService.ZXKH_OpenidToName(obj.XCXFromOpenId);
-                        //WxappService.ZXKH_SendText(obj.ToUserName, obj.Content, (string)user["KHNAME"]);
+                        WxappService.ZXKH_SendText(obj.ToUserName, obj.Content, (string)user["KHNAME"]);
                     }
                 }
                 if (obj.MsgType == "voice")
