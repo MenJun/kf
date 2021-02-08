@@ -1342,10 +1342,11 @@ namespace Api.Controllers.V1
                     {
                         obj
                     }
-                };
+                }; 
             }
             else
             {
+                // 时间戳
                 obj.CreateTime = WxappService.ZXKH_ConvertDateTimeInt(DateTime.Now);
                 if (obj.MsgType == "text")
                 {
