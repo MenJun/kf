@@ -187,7 +187,8 @@ namespace Common.Utils
                         return new
                         {
                             errcode = MISSJWTTOKEN,
-                            errmsg = "缺少Token！"
+                            //errmsg = "缺少Token！"
+                            errmsg = "请先登录！"
                         };
                     }
                     else if (message.Contains("jwt token illegal"))
