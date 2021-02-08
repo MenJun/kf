@@ -2069,7 +2069,7 @@ WHERE   (d.FNAME = '客服')) )
         public IList<dynamic> pc_ZXKH_ALLGroupList()
         {
             ISession session = NHSessionProvider.GetCurrentSession();
-            string sql = @"SELECT   TOP (100) PERCENT GroupID, GroupName, GroupQRcode, GroupRemarks, GroupNo, UserFID, createtime, 
+            string sql = @"SELECT   TOP (100) PERCENT GroupID, GroupName, GroupQRcode, GroupRemarks, GroupNo as xcxopenid, UserFID, createtime, 
                             GroupImgBase64 as picUrl, GroupState
                             FROM      dbo.T_ESS_CHANNELSTAFF_GROUP
                             WHERE   (GroupState = N'正常')
@@ -2116,7 +2116,7 @@ WHERE   (d.FNAME = '客服')) )
         {
             ISession session = NHSessionProvider.GetCurrentSession();
             var sql = @"SELECT   TOP (1) PERCENT dbo.T_ESS_CHANNELSTAFF.FID, dbo.T_ESS_CHANNELSTAFF.KHNAME, 
-                dbo.T_ESS_CHANNELSTAFF.XCXOPENID, dbo.T_ESS_CHANNELSTAFF_GROUP.GroupNo, 
+                dbo.T_ESS_CHANNELSTAFF.XCXOPENID, dbo.T_ESS_CHANNELSTAFF_GROUP.GroupNo as xcxopenid, 
                 dbo.T_ESS_CHANNELSTAFF_GROUP.GroupName, dbo.T_ESS_CHANNELSTAFF_GROUP.GroupImgBase64, 
                 dbo.T_ESS_CHANNELSTAFF_GROUP.createtime, dbo.T_ESS_CHANNELSTAFF_GROUP.GroupState
                 FROM      dbo.T_ESS_CHANNELSTAFF INNER JOIN

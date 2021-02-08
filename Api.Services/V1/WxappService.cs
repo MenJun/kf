@@ -3398,12 +3398,12 @@ namespace Api.Services.V1
             foreach (var item in results)
             {
 
-                var openid = (string)item["GroupNo"];
+                var openid = (string)item["xcxopenid"];
                 var count = RedisHelper.StringGet(openid);
                 item["count"] = count == "0" ? "" : count;
                 item["diffMinutes"] = DateTime.Now.Subtract(TimeStampHelper.FromTimeStamp((long)item["createtime"]).AddHours(-8)).TotalMinutes;
 
-                var groupno = item["GroupNo"];  //定义群组的id
+                var groupno = item["xcxopenid"];  //定义群组的id
 
                 var groupname = item["GroupName"];   //定义群组的名称
                 if (groupname == null)
@@ -3480,8 +3480,18 @@ namespace Api.Services.V1
         {
             //查询客户关联的客服
             var relation_KF = WxappDao.relation(wxopenid);
-            //消息查询
-            var result = WxappDao.pc_QueryCustomerMessage(wxopenid, relation_KF, page, limit);
+            //IList<dynamic> result;
+            //if (relation_KF ==null )
+            //{
+            //    //群消息
+            //   result = WxappDao.pc_ZXKH_QueryGroupMsg(wxopenid, page, limit);
+            //}
+            //else
+            //{
+                //用户查询
+              var result = WxappDao.pc_QueryCustomerMessage(wxopenid, relation_KF, page, limit);
+            //}
+          
             IList<CustomerServiceMessageVO> vos;
             //var result = WxappDao.ZXKH_QueryCustomerMessage(wxopenid, relation_KF, page, limit);
             vos = AutoMapper.Mapper.Map<List<CustomerServiceMessageVO>>(result);

@@ -431,6 +431,10 @@
     <TypeScriptCompile Include="Scripts\index.d.ts" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Api.Dao\Api.Dao.csproj">
+      <Project>{2C8CAE26-C30F-41B1-8DA1-BEE426F6732F}</Project>
+      <Name>Api.Dao</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Api.Model\Api.Model.csproj">
       <Project>{BF535EA8-8830-4EE7-A819-20B7B86D06CA}</Project>
       <Name>Api.Model</Name>

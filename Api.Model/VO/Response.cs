@@ -30,6 +30,9 @@ namespace Api.Model.VO
 {
     public class Response
     {
+        public string MsgType;
+        public object PagePath;
+
         public int Errcode
         {
             get;

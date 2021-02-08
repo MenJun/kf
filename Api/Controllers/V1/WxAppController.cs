@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
 using System.Xml;
+using Api.Dao.V1;
 using Api.Model.DO;
 using Api.Model.VO;
 using Api.Model.VO.WX;
@@ -31,6 +32,12 @@ namespace Api.Controllers.V1
     {
         [Dependency]
         public WxappService WxappService
+        {
+            get;
+            set;
+        }
+        [Dependency]
+        public WxappDao WxappDao
         {
             get;
             set;
@@ -1306,11 +1313,11 @@ namespace Api.Controllers.V1
         [HttpPost]
         [Transaction]
         public Response ZXKH_sendMsg([FromBody]CustomerServiceMessage obj)
-        {
+          {
             if (obj.FromUserName == "-1" && obj.XCXToOpenId.Length > 28)
             {
                 // 获取客服
-                obj.XCXFromOpenId = WxappService.pc_kf_Lastgroup(obj.XCXToOpenId);
+                //obj.XCXFromOpenId = WxappService.pc_kf_Lastgroup(obj.XCXToOpenId);
 
                 
                 obj.CreateTime = WxappService.ZXKH_ConvertDateTimeInt(DateTime.Now);
@@ -1335,10 +1342,11 @@ namespace Api.Controllers.V1
                     {
                         obj
                     }
-                };
+                }; 
             }
             else
             {
+                // 时间戳
                 obj.CreateTime = WxappService.ZXKH_ConvertDateTimeInt(DateTime.Now);
                 if (obj.MsgType == "text")
                 {
@@ -1509,11 +1517,10 @@ namespace Api.Controllers.V1
         {
 
 
-            if (obj.XCXToOpenId.Length != 28)
-            {
-                obj.XCXFromOpenId = WxappService.pc_kf_Lastgroup(obj.XCXToOpenId);
-
-            }
+            //if (obj.XCXToOpenId.Length != 28)
+            //{
+            //    obj.XCXFromOpenId = WxappService.pc_kf_Lastgroup(obj.XCXToOpenId);
+            //}
             obj.CreateTime = WxappService.ZXKH_ConvertDateTimeInt(DateTime.Now);
             if (obj.MsgType == "text")
             {
@@ -1557,6 +1564,7 @@ namespace Api.Controllers.V1
         [Transaction]
         public async Task<IList<CustomerServiceMessageVO>> pc_QueryCustomerMsg([FromUri]string wxopenid, [FromUri]int page, [FromUri]int limit)
         {
+            //var relation_KF = WxappDao.pc_ZXKH_QueryGroupMsg(wxopenid, page, limit);
             var result = await WxappService.pc_QueryCustomerMsg(wxopenid, page, limit);
 
             return result;
