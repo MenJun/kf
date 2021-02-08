@@ -1931,7 +1931,7 @@ namespace Api.Services.V1
         /// <returns></returns>
         public async Task<Response> ZXKH_QueryFriend(long user, long userfriend)
         {
-            var results = WxappDao.ZXKH_QueryFriend(user, userfriend);
+            var results =WxappDao.ZXKH_QueryFriend(user, userfriend);
 
             return new Response
             {
@@ -3157,7 +3157,7 @@ namespace Api.Services.V1
             };
         }
         /// <summary>
-        /// 微信公众号菜单手机绑定
+        /// 微信公众号菜单手机绑定-暂时无用
         /// </summary>
         /// <param name="openid"></param>
         /// <param name="FMOBILE"></param>

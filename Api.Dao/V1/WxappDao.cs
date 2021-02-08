@@ -1411,7 +1411,9 @@ WHERE   (T_ESS_CHANNELSTAFF.FMOBILE = :p1)";
         public IList<dynamic> ZXKH_QueryFriend(long user, long userfriend)
         {
             ISession session = NHSessionProvider.GetCurrentSession();
-            string sql = @"select * from T_ESS_CHANNELSTAFF_FriendShip where userID = :p1 and hisfriendID = :p2 and status = 1";
+            string sql = @"SELECT     friendsID, userID, hisfriendID, createtime, status
+                            FROM         dbo.T_ESS_CHANNELSTAFF_FriendShip
+                            WHERE     userID = :p1 AND hisfriendID = :p2";
             return session.CreateSQLQuery(sql)
             .SetParameter("p1", user)
             .SetParameter("p2", userfriend)
@@ -1777,21 +1779,19 @@ GROUP BY derivedtbl_1.FNAME, derivedtbl_1.FWXOPENID, derivedtbl_1.Expr2, derived
         }
 
         /// <summary>
-        /// 通过群组编号获取群组所有成员头像
+        /// 通过群组编号获取群组所有成员头像,按加入群时间先后顺序
         /// </summary>
         /// <param name="OPENID"></param>
         public IList<dynamic> ZXKH_GroupManagement(string groupno)
         {
             ISession session = NHSessionProvider.GetCurrentSession();
-            string sql = @"SELECT   T_ESS_CHANNELSTAFF_AVATAR.STAFFID, T_ESS_CHANNELSTAFF_AVATAR.PICTURE, 
-                T_ESS_CHANNELSTAFF.KHNAME
-                FROM      T_ESS_CHANNELSTAFF_GROUPSHIP INNER JOIN
-                T_ESS_CHANNELSTAFF_GROUP ON 
-                T_ESS_CHANNELSTAFF_GROUPSHIP.GroupNo = T_ESS_CHANNELSTAFF_GROUP.GroupNo INNER JOIN
-                T_ESS_CHANNELSTAFF_AVATAR ON 
-                T_ESS_CHANNELSTAFF_GROUPSHIP.UserFID = T_ESS_CHANNELSTAFF_AVATAR.STAFFID INNER JOIN
-                T_ESS_CHANNELSTAFF ON T_ESS_CHANNELSTAFF_AVATAR.STAFFID = T_ESS_CHANNELSTAFF.FID
-                WHERE   (T_ESS_CHANNELSTAFF_GROUP.GroupNo = :p1)";
+            string sql = @"SELECT     TOP (100) PERCENT dbo.T_ESS_CHANNELSTAFF_AVATAR.STAFFID, dbo.T_ESS_CHANNELSTAFF_AVATAR.PICTURE, dbo.T_ESS_CHANNELSTAFF.KHNAME
+                      FROM         dbo.T_ESS_CHANNELSTAFF_GROUPSHIP INNER JOIN
+                      dbo.T_ESS_CHANNELSTAFF_GROUP ON dbo.T_ESS_CHANNELSTAFF_GROUPSHIP.GroupNo = dbo.T_ESS_CHANNELSTAFF_GROUP.GroupNo INNER JOIN
+                      dbo.T_ESS_CHANNELSTAFF_AVATAR ON dbo.T_ESS_CHANNELSTAFF_GROUPSHIP.UserFID = dbo.T_ESS_CHANNELSTAFF_AVATAR.STAFFID INNER JOIN
+                      dbo.T_ESS_CHANNELSTAFF ON dbo.T_ESS_CHANNELSTAFF_AVATAR.STAFFID = dbo.T_ESS_CHANNELSTAFF.FID
+                      WHERE     (dbo.T_ESS_CHANNELSTAFF_GROUP.GroupNo = :p1)
+                      ORDER BY dbo.T_ESS_CHANNELSTAFF_GROUPSHIP.JoinTime";
             return session.CreateSQLQuery(sql)
             .SetParameter("p1", groupno)
             .SetResultTransformer(new AliasToEntityMapResultTransformer())
