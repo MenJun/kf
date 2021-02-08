@@ -3398,12 +3398,12 @@ namespace Api.Services.V1
             foreach (var item in results)
             {
 
-                var openid = (string)item["GroupNo"];
+                var openid = (string)item["xcxopenid"];
                 var count = RedisHelper.StringGet(openid);
                 item["count"] = count == "0" ? "" : count;
                 item["diffMinutes"] = DateTime.Now.Subtract(TimeStampHelper.FromTimeStamp((long)item["createtime"]).AddHours(-8)).TotalMinutes;
 
-                var groupno = item["GroupNo"];  //定义群组的id
+                var groupno = item["xcxopenid"];  //定义群组的id
 
                 var groupname = item["GroupName"];   //定义群组的名称
                 if (groupname == null)

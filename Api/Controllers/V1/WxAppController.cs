@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
 using System.Xml;
+using Api.Dao.V1;
 using Api.Model.DO;
 using Api.Model.VO;
 using Api.Model.VO.WX;
@@ -31,6 +32,12 @@ namespace Api.Controllers.V1
     {
         [Dependency]
         public WxappService WxappService
+        {
+            get;
+            set;
+        }
+        [Dependency]
+        public WxappDao WxappDao
         {
             get;
             set;
@@ -1556,6 +1563,7 @@ namespace Api.Controllers.V1
         [Transaction]
         public async Task<IList<CustomerServiceMessageVO>> pc_QueryCustomerMsg([FromUri]string wxopenid, [FromUri]int page, [FromUri]int limit)
         {
+            //var relation_KF = WxappDao.pc_ZXKH_QueryGroupMsg(wxopenid, page, limit);
             var result = await WxappService.pc_QueryCustomerMsg(wxopenid, page, limit);
 
             return result;
