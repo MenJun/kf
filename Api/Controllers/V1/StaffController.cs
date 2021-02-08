@@ -245,6 +245,9 @@ namespace Api.Controllers.V1
             var sql = @"update T_ESS_CHANNELSTAFF_L set FJOB='" + ROLE.FNAME + "',FROLEID=" + ROLE.FID + " where FPKID=" + FID;
             var CHANNELSTAFF = session.CreateSQLQuery(sql)
                 .ExecuteUpdate();
+            sql = @"delete from T_ESS_CHANNELSTAFF_RelationShip where CustomerID = '" + FID + "'";
+            CHANNELSTAFF = session.CreateSQLQuery(sql)
+                .ExecuteUpdate();
             return new Response
             {
                 Result = 1,
