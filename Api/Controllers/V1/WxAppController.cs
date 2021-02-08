@@ -782,7 +782,7 @@ namespace Api.Controllers.V1
             return results;
         }
         /// <summary>
-        /// 微信小程序-查找好友关系
+        /// 微信小程序-查找好友关系1
         /// </summary>
         /// <param name="user">用户fid</param>
         /// <param name="userfriend">用户查找的fid</param>
