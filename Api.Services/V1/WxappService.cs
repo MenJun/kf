@@ -3588,7 +3588,7 @@ namespace Api.Services.V1
                         {
                             media_id = mediaId
                         };
-                        obj.Content = "http://47.92.29.173:8088/" + savePath;
+                        obj.Content = savePath;
 
                         //ZXKH_savemessage(obj);
                         ZXKH_SendImage(obj.ToUserName, mediaId);
