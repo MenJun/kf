@@ -3542,68 +3542,140 @@ namespace Api.Services.V1
             string basePath = AppDomain.CurrentDomain.BaseDirectory;
 
             string filePath = "ZXKF_UpLoad";                   ///SERVICE_IMG_PATH + DateTime.Now.ToString("yyyyMMdd");
-            int limitFileSize = 1024 * 1024 * 2;
-
-            string fullPath = basePath + filePath;
-            string savePath = "";
-
-            //如果目录不存在，则创建目录
-            if (!Directory.Exists(fullPath))
+            if (obj.MsgType == "image")
             {
-                Directory.CreateDirectory(fullPath);
-            }
+                int limitFileSize = 1024 * 1024 * 2;
 
-            if (files.Count > 0)
-            {
-                foreach (var key in files.AllKeys)
+                string fullPath = basePath + filePath;
+                string savePath = "";
+
+                //如果目录不存在，则创建目录
+                if (!Directory.Exists(fullPath))
                 {
-                    var file = files[key];
-                    //校验文件类型
-                    string fileExtension = Path.GetExtension(file.FileName);
-                    string fileMimeType = MimeMapping.GetMimeMapping(file.FileName);
-                    string[] fileTypeWhiteList = new string[] { ".jpg", ".jpeg", ".png" };
-                    string[] fileMimeTypeWhiteList = new string[] { "image/jpg", "image/jpeg", "image/png" };
-                    if (!fileTypeWhiteList.Contains(fileExtension.ToLower()) || !fileMimeTypeWhiteList.Contains(fileMimeType))
-                    {
-                        throw new Exception($"文件{file.FileName}是不支持的文件类型！");
-                    }
-
-                    if (file.ContentLength > limitFileSize)
-                    {
-                        throw new Exception($"文件{file.FileName}超出大小限制，请处理后上传！");
-                    }
-
-                    if (!string.IsNullOrEmpty(file.FileName))
-                    {
-                        string fileName = Guid.NewGuid().ToString("N") + Path.GetExtension(file.FileName);
-                        savePath = filePath + "/" + fileName;
-                        file.SaveAs(fullPath + "/" + fileName);
-
-                        //var token = WxHelper.GetAccessToken(AppId, Secret);
-                        //var mediaId = TencentHelper.UploadTempMedia(token, fullPath + "/" + fileName);
-                        var mediaId = ZXKH_UploadImgByB64(ImageToBase64(fullPath + "/" + fileName));
-
-                        obj.MediaId = mediaId;
-                        obj.Image = new
-                        {
-                            media_id = mediaId
-                        };
-                        obj.Content = savePath;
-
-                        //ZXKH_savemessage(obj);
-                        ZXKH_SendImage(obj.ToUserName, mediaId);
-                        //TencentHelper.SendCustomerMessageToUser(token, TencentHelper.MSG_TYPE_IMG, string.Empty, mediaId, obj.ToUserName);
-                    }
+                    Directory.CreateDirectory(fullPath);
                 }
-                return new Response
+
+                if (files.Count > 0)
                 {
-                    Result = WxappDao.SaveCustomerMessage(obj)  //savePath
-                };
+                    foreach (var key in files.AllKeys)
+                    {
+                        var file = files[key];
+                        //校验文件类型
+                        string fileExtension = Path.GetExtension(file.FileName);
+                        string fileMimeType = MimeMapping.GetMimeMapping(file.FileName);
+                        string[] fileTypeWhiteList = new string[] { ".jpg", ".jpeg", ".png" };
+                        string[] fileMimeTypeWhiteList = new string[] { "image/jpg", "image/jpeg", "image/png" };
+                        if (!fileTypeWhiteList.Contains(fileExtension.ToLower()) || !fileMimeTypeWhiteList.Contains(fileMimeType))
+                        {
+                            throw new Exception($"文件{file.FileName}是不支持的文件类型！");
+                        }
+
+                        if (file.ContentLength > limitFileSize)
+                        {
+                            throw new Exception($"文件{file.FileName}超出大小限制，请处理后上传！");
+                        }
+
+                        if (!string.IsNullOrEmpty(file.FileName))
+                        {
+                            string fileName = Guid.NewGuid().ToString("N") + Path.GetExtension(file.FileName);
+                            savePath = filePath + "/" + fileName;
+                            file.SaveAs(fullPath + "/" + fileName);
+
+                            //var token = WxHelper.GetAccessToken(AppId, Secret);
+                            //var mediaId = TencentHelper.UploadTempMedia(token, fullPath + "/" + fileName);
+                            var mediaId = ZXKH_UploadImgByB64(ImageToBase64(fullPath + "/" + fileName));
+
+                            obj.MediaId = mediaId;
+                            obj.Image = new
+                            {
+                                media_id = mediaId
+                            };
+                            obj.Content = savePath;
+
+                            //ZXKH_savemessage(obj);
+                            ZXKH_SendImage(obj.ToUserName, mediaId);
+                            //TencentHelper.SendCustomerMessageToUser(token, TencentHelper.MSG_TYPE_IMG, string.Empty, mediaId, obj.ToUserName);
+                        }
+                    }
+                    return new Response
+                    {
+                        Result = WxappDao.SaveCustomerMessage(obj)  //savePath
+                    };
+                }
+                else
+                {
+                    throw new Exception("上传失败，未接收到请求文件！");
+                }
             }
             else
             {
-                throw new Exception("上传失败，未接收到请求文件！");
+                int limitFileSize = 1024 * 1024 * 2;
+
+                string fullPath = basePath + filePath;
+                string savePath = "";
+
+                //如果目录不存在，则创建目录
+                if (!Directory.Exists(fullPath))
+                {
+                    Directory.CreateDirectory(fullPath);
+                }
+
+                if (files.Count > 0)
+                {
+                    foreach (var key in files.AllKeys)
+                    {
+                        var file = files[key];
+                        //校验文件类型
+                        string fileExtension = Path.GetExtension(file.FileName);
+                       
+                        if (!Directory.Exists(fullPath + "\\" + fileExtension.Substring(1, fileExtension.Length -1)))
+                        {
+                            Directory.CreateDirectory(fullPath + "\\" + fileExtension.Substring(1, fileExtension.Length - 1));
+                        }
+                        string fileMimeType = MimeMapping.GetMimeMapping(file.FileName);
+                        string[] fileTypeWhiteList = new string[] { ".txt", ".docx", ".pptx" };
+                        string[] fileMimeTypeWhiteList = new string[] { "text/plain"};
+                        if (!fileTypeWhiteList.Contains(fileExtension.ToLower()) || !fileMimeTypeWhiteList.Contains(fileMimeType))
+                        {
+                            throw new Exception($"文件{file.FileName}是不支持的文件类型！");
+                        }
+
+                        if (file.ContentLength > limitFileSize)
+                        {
+                            throw new Exception($"文件{file.FileName}超出大小限制，请处理后上传！");
+                        }
+
+                        if (!string.IsNullOrEmpty(file.FileName))
+                        {
+                            string fileName = Guid.NewGuid().ToString("N") + Path.GetExtension(file.FileName);
+                            savePath = filePath + "/" + fileExtension.Substring(1, fileExtension.Length - 1) + "/" +file.FileName;
+                            file.SaveAs(fullPath + "/" + fileExtension.Substring(1, fileExtension.Length - 1) + "/" + file.FileName);
+
+                            //var token = WxHelper.GetAccessToken(AppId, Secret);
+                            //var mediaId = TencentHelper.UploadTempMedia(token, fullPath + "/" + fileName);
+                            //var mediaId = ZXKH_UploadImgByB64(ImageToBase64(fullPath + "/" + fileName));
+
+                            //obj.MediaId = mediaId;
+                            //obj.Image = new
+                            //{
+                            //    media_id = mediaId
+                            //};
+                            obj.Content = savePath;
+
+                            //ZXKH_SendImage(obj.ToUserName, mediaId);
+                        }
+                    }
+                    return new Response
+                    {
+                        Result = WxappDao.SaveCustomerMessage(obj)  //savePath
+                    };
+                }
+                else
+                {
+                    throw new Exception("上传失败，未接收到请求文件！");
+                }
             }
+           
         }
         /// <summary>
         /// base64 转 Image

@@ -1314,12 +1314,12 @@ namespace Api.Controllers.V1
         [Transaction]
         public Response ZXKH_sendMsg([FromBody]CustomerServiceMessage obj)
           {
-            if (obj.FromUserName == "-1" && obj.XCXToOpenId.Length > 28)
+            if (false)
             {
-                // 获取客服
+                // 获取客服 obj.FromUserName == "-1" && obj.XCXToOpenId.Length > 28
                 //obj.XCXFromOpenId = WxappService.pc_kf_Lastgroup(obj.XCXToOpenId);
 
-                
+
                 obj.CreateTime = WxappService.ZXKH_ConvertDateTimeInt(DateTime.Now);
                
                 WxappService.ZXKH_savemessage(obj);
