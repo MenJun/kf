@@ -1,0 +1,7 @@
+U8VKhZ5uoDhKUFQa 
+
+      var ele = document.getElementById('dialogue_box')
+      if (ele.scrollHeight > ele.clientHeight) {
+        // 设置滚动条到最底部
+        ele.scrollTop = ele.scrollHeight
+      }

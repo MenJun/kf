@@ -2186,6 +2186,10 @@ WHERE a.FWXOPENID = :p1";
           FROM dbo.T_CUS_SERVER_MSG
           WHERE XCXFromOpenId='-1' and XCXToOpenId= :p0
           UNION
+            SELECT *
+          FROM dbo.T_CUS_SERVER_MSG
+          WHERE XCXFromOpenId= :p0 and XCXToOpenId= '-1'
+          UNION
           SELECT *
           FROM dbo.T_CUS_SERVER_MSG
           WHERE XCXFromOpenId=:p1 and XCXToOpenId= :p2
