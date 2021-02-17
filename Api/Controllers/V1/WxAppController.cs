@@ -722,6 +722,21 @@ namespace Api.Controllers.V1
             return result;
         }
         /// <summary>
+        /// 微信小程序-用户表，所有的用户
+        /// </summary>
+        /// <returns></returns>
+        [Route("zxkh_user")]
+        [HttpGet]
+        [Transaction]
+        public async Task<Response> ZXKH_User()
+        {
+            var result = await WxappService.ZXKH_User();
+
+            return result;
+        }
+        
+
+        /// <summary>
         /// 微信小程序-查看好友申请
         /// </summary>
         /// <param name="fmobile">用户手机号码</param>
@@ -782,7 +797,7 @@ namespace Api.Controllers.V1
             return results;
         }
         /// <summary>
-        /// 微信小程序-查找好友关系1
+        /// 微信小程序-查找好友关系
         /// </summary>
         /// <param name="user">用户fid</param>
         /// <param name="userfriend">用户查找的fid</param>
@@ -987,13 +1002,9 @@ namespace Api.Controllers.V1
             };
             //hub.Clients.All(Newtonsoft.Json.JsonConvert.SerializeObject(data));
             //hub.Clients.All.notify(data);
-            
-
             dynamic result = WxappService.ZXKH_SendWebSocket(userid);
             var user = (string)result["ConnectionID"];
             hub.Clients.Client(user).notify(data);
-            //var hub = GlobalHost.ConnectionManager.GetHubContext<MessageHub>();
-            //hub.Clients.All.notify(result);
         }
 
         [Route("zxkh_khcustomer")]
@@ -1318,8 +1329,6 @@ namespace Api.Controllers.V1
             {
                 // 获取客服
                 //obj.XCXFromOpenId = WxappService.pc_kf_Lastgroup(obj.XCXToOpenId);
-
-                
                 obj.CreateTime = WxappService.ZXKH_ConvertDateTimeInt(DateTime.Now);
                
                 WxappService.ZXKH_savemessage(obj);
@@ -1447,18 +1456,6 @@ namespace Api.Controllers.V1
         {
             
             return WxappService.ZXKH_wxgzh(code);
-        }
-        /// <summary>
-        /// 微信公众号绑定手机号
-        /// </summary>
-        /// <returns></returns>
-        [AllowAnonymous]
-        [Route("webuser")]
-        [HttpPost]
-        [Transaction]
-        public Response ZXKH_WxgzhUserInfo(string openid,string phone)
-        {
-            return WxappService.ZXKH_UserInfo(openid, phone);
         }
         /// <returns></returns>
         [AllowAnonymous]

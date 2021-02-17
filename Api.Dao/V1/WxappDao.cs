@@ -1238,6 +1238,19 @@ LEFT JOIN T_CUS_SERVER_MSG m1 on m1.Id = m.id";
            .SetResultTransformer(new AliasToEntityMapResultTransformer())
            .List<dynamic>();
         }
+
+        public IList<dynamic> ZXKH_User()
+        {
+            ISession session = NHSessionProvider.GetCurrentSession();
+            string sql = @"SELECT     dbo.T_ESS_CHANNELSTAFF.FID, dbo.T_ESS_CHANNELSTAFF.KHNAME, dbo.T_ESS_CHANNELSTAFF_AVATAR.PICTURE, dbo.T_ESS_CHANNELSTAFF.XCXOPENID, 
+                      dbo.T_ESS_CHANNELSTAFF.FWXOPENID
+                      FROM         dbo.T_ESS_CHANNELSTAFF INNER JOIN
+                      dbo.T_ESS_CHANNELSTAFF_AVATAR ON dbo.T_ESS_CHANNELSTAFF.FID = dbo.T_ESS_CHANNELSTAFF_AVATAR.STAFFID
+                       WHERE     (dbo.T_ESS_CHANNELSTAFF.XCXOPENID != '-1')";
+            return session.CreateSQLQuery(sql)
+           .SetResultTransformer(new AliasToEntityMapResultTransformer())
+           .List<dynamic>();
+        }
         /// <summary>
         /// 查看好友申请
         /// </summary>

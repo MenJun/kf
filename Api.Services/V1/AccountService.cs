@@ -792,8 +792,7 @@ namespace Api.Services.V1
 
                         if (StaffService.ZXKH_Staff_Customers(openid)) //判断该用户是否有客服关联，微信小程序消息发送进行人员的第一次分配
                         {
-                            StaffService.ZXKH_AddShip(openid);//添加
-                            WxappService.ZXKH_WriteTxt("添加哦");
+                            StaffService.ZXKH_AddShip(openid);//添加人员关系
                         }
 
 
@@ -827,26 +826,6 @@ namespace Api.Services.V1
                 }
 
                 var token = JwtHelper.GenerateToken((int)staff["FID"], (string)staff["FJOB"], 2);
-
-                // A3Member member = new A3Member
-                // {
-                //     KhName = (string)staff["FNAME"],
-                //     XxAddress = "",
-                //     YjAddress = "",
-                //     EmployeeId = (int)staff["FID"],
-                //     Phone = phoneNumber,
-                //     Sex = ""
-                // };
-
-                // dynamic resp = A3Service.CheckExistsAndAddMember(token, member);
-                // if ((bool)resp.isNew && !((bool)staff["ISNEW"]))
-                // {
-                //     StaffService.UpdateIsNewStatus((int)staff["FID"]);
-                // }
-                // if ((long)staff["A3ID"] == 0)
-                // {
-                //     StaffService.UpdateCustomerA3Id((int)staff["FID"], (long)resp.memberID);
-                // }
 
                 var user = new
                 {
@@ -925,146 +904,7 @@ namespace Api.Services.V1
         /// <returns></returns>
         private Response BindCustomerServiceStaff(WxPayloadVO payload)
         {
-            //HttpClient client = new HttpClient();
-            //string url = "https://api.weixin.qq.com/sns/jscode2session?appid={0}&secret={1}&js_code={2}&grant_type=authorization_code";
-            //url = string.Format(url, AppId, Secret, payload.Code);
-
-            //HttpResponseMessage response = client.GetAsync(url).Result;
-            //response.EnsureSuccessStatusCode();
-
-            //string msg = response.Content.ReadAsStringAsync().Result;
-            //dynamic data = JsonConvert.DeserializeObject<dynamic>(msg);
-
-            //if (data.errmsg == null)
-            //{
-            //    var openid = (string)data.openid;
-            //    var session_key = (string)data.session_key;
-            //    byte[] encryData = Convert.FromBase64String(payload.EncryptedData);
-            //    RijndaelManaged rijndaelCipher = new RijndaelManaged
-            //    {
-            //        Key = Convert.FromBase64String(session_key),
-            //        IV = Convert.FromBase64String(payload.Iv),
-            //        Mode = CipherMode.CBC,
-            //        Padding = PaddingMode.PKCS7
-            //    };
-            //    ICryptoTransform transform = rijndaelCipher.CreateDecryptor();
-            //    byte[] plainText = transform.TransformFinalBlock(encryData, 0, encryData.Length);
-            //    string result = Encoding.Default.GetString(plainText);
-            //    //动态解析result 成对象
-            //    dynamic obj = Newtonsoft.Json.Linq.JToken.Parse(result) as dynamic;
-
-            //    string phoneNumber = (string)obj.phoneNumber;
-
-            //    //查询客服角色是否存在，如不存在则添加
-            //    ARole role = StaffService.QueryCustomerServiceRole();
-            //    if (role == null)
-            //    {
-            //        role = new ARole
-            //        {
-            //            FNAME = "客服",
-            //            FSTOREID = 27
-            //        };
-            //        RoleDao.Save(role);
-            //    }
-            //    //查询手机号是否已注册
-            //    dynamic staff = StaffService.QueryCustomerServiceStaffByPhoneNumber(phoneNumber, role.FID);
-
-
-            //    //2020-11-19
-            //    dynamic staffYH = StaffService.QueryWxappUserByPhoneNumbers(phoneNumber);
-            //    //手机号码不为空
-            //    if (staffYH != null)
-            //    {
-            //        return User_login(staffYH, phoneNumber);//绑定客户
-            //    }
-
-
-            //    if (staff == null)
-            //    {
-            //        ChannelStaffVO vo = new ChannelStaffVO();
-            //        vo.ISNEW = false;
-            //        vo.FCHANNELID = 27;
-            //        vo.FMOBILE = phoneNumber;
-            //        vo.FWXOPENID = openid;
-            //        vo.FENABLE = '1';
-            //        vo.FTELE = string.Empty;
-            //        vo.FCREATEDATE = System.DateTime.Now;
-            //        vo.FMODIFYDATE = System.DateTime.Now;
-            //        vo.FCREATORID = 0;
-            //        vo.FMODIFIERID = 0;
-            //        vo.FQQ = string.Empty;
-            //        vo.ISNEW = false;
-            //        vo.KHNAME = "客服" + UniqueKeyHelper.GetUniqueKey(8);
-
-            //        ChannelStaffLVO staffLVO = new ChannelStaffLVO
-            //        {
-            //            FNAME = vo.KHNAME,
-            //            FJOB = "客服",
-            //            FREMARK = string.Empty,
-            //            FROLEID = role.FID
-            //        };
-
-            //        vo.ChannelStaffLVOs = staffLVO;
-
-            //        StaffService.Save(vo);
-
-            //        NHSessionProvider.GetCurrentSession().Flush();
-
-            //        var customerId = StaffService.QueryCustomerByWxopenid(openid, role.FID);
-            //        ESSChannelStaffAvatar avatar = new ESSChannelStaffAvatar
-            //        {
-            //            //Picture = "image/head.png",
-            //            Picture = "https://zxkf.shuziyu.net//Image/newcomer.png",
-            //            StaffId = Convert.ToInt32(customerId),
-            //            UseWxAvatar = false
-            //        };
-
-            //        StaffService.SaveAvatar(avatar);
-
-
-            //        NHSessionProvider.GetCurrentSession().Flush();
-
-            //        staff = StaffService.QueryCustomerServiceStaffByPhoneNumber(phoneNumber, role.FID);
-            //    }
-            //    else
-            //    {
-            //        StaffService.QueryWxappUserByPhoneNumber(phoneNumber);
-            //    }
-            //    var token = JwtHelper.GenerateToken((int)staff["FID"], (string)staff["FJOB"], 2);
-
-            //    var user = new
-            //    {
-            //        userId = (int)staff["FID"],
-            //        wxopenid = (string)staff["FWXOPENID"],
-            //        FJOB = (string)staff["FJOB"],
-            //        userName = (string)staff["FNAME"],
-            //        channelName = (string)staff["CHANNELNAME"],
-            //        channelCode = (string)staff["FCHANNELCODE"],
-            //        channelId = (int)staff["FCHANNELID"],
-            //        customerId = (int)staff["FCUSTOMERID"],
-            //        channelTypeId = (int)staff["FCHANNELTYPEID"],
-            //        channelTypeName = (string)staff["FCHANNELTYPENAME"],
-            //        avatarUrl = (string)staff["PICTURE"],
-            //        nickName = (string)staff["KHNAME"],
-            //        phoneNumber = phoneNumber
-            //    };
-
-            //    return new Response
-            //    {
-            //        Result = new
-            //        {
-            //            token,
-            //            user
-            //        }
-            //    };
-
-            //}
-            //else
-            //{
-            //    throw new Exception((string)data.errmsg);
-            //}
             
-
             HttpClient client = new HttpClient();
             string url = "https://api.weixin.qq.com/sns/jscode2session?appid={0}&secret={1}&js_code={2}&grant_type=authorization_code";
             url = string.Format(url, AppId, Secret, payload.Code);
@@ -1146,8 +986,7 @@ namespace Api.Services.V1
 
                         if (StaffService.ZXKH_Staff_Customers(openid)) //判断该用户是否有客服关联，微信小程序消息发送进行人员的第一次分配
                         {
-                            StaffService.ZXKH_AddShip(openid);//添加
-                            WxappService.ZXKH_WriteTxt("添加哦");
+                            StaffService.ZXKH_AddShip(openid);//添加人员关系
                         }
 
 
