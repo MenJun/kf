@@ -344,7 +344,7 @@ namespace Api.Services.V1
                 item.FCREATEDATE = DateTime.Now.ToLocalTime();
                 item.FMODIFYDATE = DateTime.Now.ToLocalTime();
                 item.FMOBILE = staff.FMOBILE;   //修改电话号码
-                item.KHNAME = staff.KHNAME;    //修改用户名称
+                //item.KHNAME = staff.KHNAME;    //修改用户名称
                 item.AREA = staff.AREA;     //用户地区
                 item.BIRTHDAY = staff.BIRTHDAY;   //用户生日
                 item.FQQ = staff.FQQ;          //用户QQ
@@ -368,7 +368,7 @@ namespace Api.Services.V1
                 Dao.Edit(item);
                 ESSChannelStaff_L staffL = AutoMapper.Mapper.Map<ESSChannelStaff_L>(vo.ChannelStaffLVOs);
                 staffL.FPKID = staff.FID;
-                staffL.FNAME = staff.KHNAME;
+                staffL.FNAME = "admin";//staff.KHNAME;
                 if (vo.FCHANNELID == 27)
                 {
                     staffL.FNAME = "微信注册用户";

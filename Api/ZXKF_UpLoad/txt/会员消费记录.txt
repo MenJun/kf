@@ -1,0 +1,92 @@
+select distinct * from (select b.TJS_MEMBERID 会员号,STOREID 门店编号,STORENAME 门店名称,convert(varchar(20),TRANSDATE,102) 业务日期,SalesEmplName 销售员, '' 操作日期, '' 操作人,
+'' 销售单号, '' 调整单号, '' 调整原单号, case a.ORDERTYPE when 0 then '销售' when 1 then '退货' when 2 then '以旧换新' else '红冲' end as 单据类型,
+case gift when 0 then '否' else '是' end as 赠品,a.ITEMID 物料编码,c.ITEMNAME 物料名称,a.INVENTSERIALID 序列号,convert(varchar(20),d.PRODDATE,102) 制造日期,
+ic.ID 国检证书号,a.PCATEGORYID 品类,d.CERTNUM 国际证书编号,d.CERTDTC DTCID, smag.FNUMBER 物料分类组,smagl.FNAME 物料分类组名称,d.PSTYLEID 公司款号,e.URL 款图,d.VENDSTYLEID 工厂款号,'' 款式组,
+a.PCONFIGID 规格,a.PCOLORID 颜色,a.PCLARITYID 净度,a.PMATERIALID 材质,a.PSIZEID 指圈,a.PRIMARYQTY 主石数量,a.PRIMARYWEIGHT 主石重量,a.SECONDARYQTY 配石数量,a.SECONDARYWEIGHT 
+配石重量, d.PRODUCTSERIALID 货品系列,CAST(a.GOLDWEIGHT AS VARCHAR(20)) 金重,d.CERTWEIGHT 证书重,a.PRIMARYWEIGHT+a.SECONDARYWEIGHT+a.GOLDWEIGHT 总重,'' 产品系列,d.RETAILPRICE 标价,0 一口价,0 推广价,
+a.SALESPRICE 售价,a.QTY 数量, 0.00 商场扣点,
+0.00 特批扣点,'' 市场活动,'' 备注,'' 镶嵌方式,'' 货品备注, '' 会员活动
+from AX_bc.dbo.TJS_RETAILSALESTRANS_ZB a left join (select TJS_MEMBERID,CONTACTPERSONID from AX_bc.dbo.CONTACTPERSON group by TJS_MEMBERID,CONTACTPERSONID) b on b.CONTACTPERSONID = a.CONTACTPERSONID
+left join AX_SerialRecords.dbo.INVENTTABLE c on c.ITEMID = a.ITEMID  AND c.PGROUPID = a.PGROUPID
+left join AX_SerialRecords.dbo.INVENTSERIAL d on d.INVENTSERIALID=a.INVENTSERIALID
+left join AX_SerialRecords.dbo.TJS_INVENTCERT ic on ic.INVENTSERIALID=d.INVENTSERIALID
+left join (select VENDSTYLEID,MAX(URL) URL from  AX_SerialRecords.dbo.TJS_INVENTIMAGEURL group by VENDSTYLEID)  e on e.VENDSTYLEID = d.VENDSTYLEID
+left join T_BD_MATERIALGROUP smag on smag.FNUMBER = a.PGROUPID
+left join T_BD_MATERIALGROUP_L smagl on smagl.FID = smag.FID) a  where   会员号='13466591659'
+union all
+select * from (
+select a.MEMBERCARD 会员号,c.FNUMBER 门店编号,cl.FNAME 门店名称,'' 业务日期,'' 销售员,convert(varchar(20),a.FCREATEDATE,102) 操作日期, sl.FNAME 操作人,
+a.FBILLNO 销售单号,rreq.FBILLNO 调整单号,a.FBILLNO 调整原单号, '销售' 单据类型, case b.FISPRESENT when '1' then '是' else '否' end as 赠品,
+isnull(serial.FYYLWLBM,ma.fnumber) 物料编码,isnull(serial.FYYLWLMC,mal.fname) 物料名称,b.FSERIALNO 序列号,convert(varchar(20),serial.FYYLZZDATE,102) 制造日期,
+serial.FYYLGCZSNO 国检证书号,zt.FPLNAME 品类,serial.FYYLGJZSNO 国际证书编号,serial.FYYLDTCID DTCID,isnull(smag.FNUMBER,mag.fnumber) 物料分类组,isnull(smagl.fname,magl.fname) 物料分类组名称,
+isnull(zt.FGOODSNUMBER,ma.fnumber) 公司款号,zt.FGOODSPIC 款图,'' 工厂款号,zt.KSZ 款式组,
+zt.FGG 规格,zt.FYS 颜色,zt.FJD 净度,zt.FCZ 材质,zt.FRING 指圈,zt.FZS1QTY 主石数量,zt.FZS1WGT 主石重量,zt.FPS1QTY 配石数量,zt.FPS1WGT 
+配石重量, zt.FHPXLNAME 货品系列,zt.FGOLDWEIGHT 金重,zt.FZSWGT 证书重,zt.FZS1WGT+zt.FPS1WGT+zt.FZSWGT 总重,zt.FCHPXL 产品系列,zt.FJBJ 标价,zt.FYIKOUJIA 一口价,
+zt.FTUIGUANGJIA 推广价,b.FPRICE 售价,b.FQTY 数量, b.F_LH_QTY1 商场扣点,
+b.F_LH_QTY 特批扣点,a.FMARKACTIVE 市场活动,'' 备注,'' 镶嵌方式,serial.FYYLHPBZ 货品备注, a.FMENACTIVE 会员活动
+from T_ESS_SALESDATA a 
+left join T_ESS_SALESDATA_DETAIL b on b.fid = a.fid
+left join T_ESS_CHANNEL c on c.FCHANNELID = a.FORDERCHANNEL
+left join T_ESS_CHANNEL_L cl on cl.FCHANNELID = c.FCHANNELID
+left join T_ESS_CHANNELSTAFF_L sl on sl.FID = a.FSTAFF
+left join T_ESS_RETURNREQ rreq on rreq.FFKID = a.FID
+left join T_BD_SERIALMASTER serial on serial.FNUMBER = b.FSERIALNO
+left join T_BD_MATERIALGROUP smag on smag.FID = serial.FYYLMATERIALGROUP
+left join T_BD_MATERIALGROUP_L smagl on smagl.FID = smag.FID
+left join A_ENABLESALESTYLE_ZT zt on zt.FSERIALNO = b.FSERIALNO
+left join T_BD_MATERIAL ma on ma.FMATERIALID = b.FMATERIALID
+left join T_BD_MATERIAL_L mal on mal.FMATERIALID = ma.FMATERIALID
+left join T_BD_MATERIALGROUP mag on mag.FID = ma.FMATERIALGROUP
+left join T_BD_MATERIALGROUP_L magl on magl.FID = mag.FID where a.FTYPEID=20) a   where   会员号='13466591659'
+union all
+select * from (
+select a.MEMBERCARD 会员号,c.FNUMBER 门店编号,cl.FNAME 门店名称,'' 业务日期,'' 销售员,convert(varchar(20),a.FCREATEDATE,102) 操作日期, sl.FNAME 操作人,
+a.FBILLNO 销售单号,rr.rpNo 调整单号,a.FBILLNO 调整原单号, '以旧换新' 单据类型, case b.FISPRESENT when '1' then '是' else '否' end as 赠品,
+isnull(serial.FYYLWLBM,ma.fnumber) 物料编码,isnull(serial.FYYLWLMC,mal.fname) 物料名称,b.FSERIALNO 序列号,convert(varchar(20),serial.FYYLZZDATE,102) 制造日期,
+serial.FYYLGCZSNO 国检证书号,zt.FPLNAME 品类,serial.FYYLGJZSNO 国际证书编号,serial.FYYLDTCID DTCID,isnull(smag.FNUMBER,mag.fnumber) 物料分类组,isnull(smagl.fname,magl.fname) 物料分类组名称,
+isnull(zt.FGOODSNUMBER,ma.fnumber) 公司款号,zt.FGOODSPIC 款图,'' 工厂款号,zt.KSZ 款式组,
+zt.FGG 规格,zt.FYS 颜色,zt.FJD 净度,zt.FCZ 材质,zt.FRING 指圈,zt.FZS1QTY 主石数量,zt.FZS1WGT 主石重量,zt.FPS1QTY 配石数量,zt.FPS1WGT 
+配石重量, zt.FHPXLNAME 货品系列,zt.FGOLDWEIGHT 金重,zt.FZSWGT 证书重,zt.FZS1WGT+zt.FPS1WGT+zt.FZSWGT 总重,zt.FCHPXL 产品系列,zt.FJBJ 标价,zt.FYIKOUJIA 一口价,
+zt.FTUIGUANGJIA 推广价,b.FPRICE 售价,b.FQTY 数量, b.F_LH_QTY1 商场扣点,
+b.F_LH_QTY 特批扣点,a.FMARKACTIVE 市场活动,'' 备注,'' 镶嵌方式,serial.FYYLHPBZ 货品备注, a.FMENACTIVE 会员活动
+from T_ESS_SALESDATA a 
+left join T_ESS_SALESDATA_DETAIL b on b.fid = a.fid
+left join T_ESS_CHANNEL c on c.FCHANNELID = a.FORDERCHANNEL
+left join T_ESS_CHANNEL_L cl on cl.FCHANNELID = c.FCHANNELID
+left join T_ESS_CHANNELSTAFF_L sl on sl.FID = a.FSTAFF
+left join A_REDSALE_RELATE rr on rr.sourceId = a.FID
+left join T_BD_SERIALMASTER serial on serial.FNUMBER = b.FSERIALNO
+left join T_BD_MATERIALGROUP smag on smag.FID = serial.FYYLMATERIALGROUP
+left join T_BD_MATERIALGROUP_L smagl on smagl.FID = smag.FID
+left join A_ENABLESALESTYLE_ZT zt on zt.FSERIALNO = b.FSERIALNO
+left join T_BD_MATERIAL ma on ma.FMATERIALID = b.FMATERIALID
+left join T_BD_MATERIAL_L mal on mal.FMATERIALID = ma.FMATERIALID
+left join T_BD_MATERIALGROUP mag on mag.FID = ma.FMATERIALGROUP
+left join T_BD_MATERIALGROUP_L magl on magl.FID = mag.FID
+where a.FTYPEID in (100201,100202) and a.FISREVERSE<>'2') a   where   会员号='13466591659'
+union all
+select * from (
+select a.MEMBERCARD 会员号,c.FNUMBER 门店编号,cl.FNAME 门店名称,'' 业务日期,'' 销售员,convert(varchar(20),a.FCREATEDATE,102) 操作日期, sl.FNAME 操作人,
+a.FBILLNO 销售单号,rr.rpNo 调整单号,a.FBILLNO 调整原单号, '退货' 单据类型, case b.FISPRESENT when '1' then '是' else '否' end as 赠品,
+isnull(serial.FYYLWLBM,ma.fnumber) 物料编码,isnull(serial.FYYLWLMC,mal.fname) 物料名称,b.FNUMBER 序列号,convert(varchar(20),serial.FYYLZZDATE,102) 制造日期,
+serial.FYYLGCZSNO 国检证书号,zt.FPLNAME 品类,serial.FYYLGJZSNO 国际证书编号,serial.FYYLDTCID DTCID,isnull(smag.FNUMBER,mag.fnumber) 物料分类组,isnull(smagl.fname,magl.fname) 物料分类组名称,
+isnull(zt.FGOODSNUMBER,ma.fnumber) 公司款号,zt.FGOODSPIC 款图,'' 工厂款号,zt.KSZ 款式组,
+zt.FGG 规格,zt.FYS 颜色,zt.FJD 净度,zt.FCZ 材质,zt.FRING 指圈,zt.FZS1QTY 主石数量,zt.FZS1WGT 主石重量,zt.FPS1QTY 配石数量,zt.FPS1WGT 
+配石重量, zt.FHPXLNAME 货品系列,zt.FGOLDWEIGHT 金重,zt.FZSWGT 证书重,zt.FZS1WGT+zt.FPS1WGT+zt.FZSWGT 总重,zt.FCHPXL 产品系列,zt.FJBJ 标价,zt.FYIKOUJIA 一口价,
+zt.FTUIGUANGJIA 推广价,b.FACTUALPRICE 售价,b.FRETURNREQQTY 数量, 0 商场扣点,
+0 特批扣点,a.FMARKETACTIVE 市场活动,a.FREMARK 备注,'' 镶嵌方式,serial.FYYLHPBZ 货品备注, a.FMEMBERACTIVE 会员活动
+from T_ESS_RETURNREQ a 
+left join T_ESS_RETURNREQENTRY b on b.fid = a.fid
+left join T_ESS_CHANNEL c on c.FCHANNELID = a.FORDERCHANNEL
+left join T_ESS_CHANNEL_L cl on cl.FCHANNELID = c.FCHANNELID
+left join T_ESS_CHANNELSTAFF_L sl on sl.FID = a.FSTAFF
+left join A_REDSALE_RELATE rr on rr.sourceId = a.FID
+left join T_BD_SERIALMASTER serial on serial.FNUMBER = b.FNUMBER
+left join T_BD_MATERIALGROUP smag on smag.FID = serial.FYYLMATERIALGROUP
+left join T_BD_MATERIALGROUP_L smagl on smagl.FID = smag.FID
+left join A_ENABLESALESTYLE_ZT zt on zt.FSERIALNO = b.FNUMBER
+left join T_BD_MATERIAL ma on ma.FMATERIALID = b.FMATERIALID
+left join T_BD_MATERIAL_L mal on mal.FMATERIALID = ma.FMATERIALID
+left join T_BD_MATERIALGROUP mag on mag.FID = ma.FMATERIALGROUP
+left join T_BD_MATERIALGROUP_L magl on magl.FID = mag.FID
+where a.FFKID=0 and a.FBILLTYPEID='')a  where   会员号='13466591659'

@@ -1372,13 +1372,13 @@ namespace Api.Controllers.V1
             else
             {
                 // 时间戳
-                obj.CreateTime = WxappService.ZXKH_ConvertDateTimeInt(DateTime.Now);
+                 obj.CreateTime = WxappService.ZXKH_ConvertDateTimeInt(DateTime.Now);
                 if (obj.MsgType == "text")
                 {
                     if (obj.ToUserName != null)
                     {
-                        dynamic user = WxappService.ZXKH_OpenidToName(obj.XCXFromOpenId);
-                        WxappService.ZXKH_SendText(obj.ToUserName, obj.Content, (string)user["KHNAME"]);
+                        //dynamic user = WxappService.ZXKH_OpenidToName(obj.XCXFromOpenId);
+                        //WxappService.ZXKH_SendText(obj.ToUserName, obj.Content, (string)user["KHNAME"]);
                     }
                 }
                 if (obj.MsgType == "voice")
@@ -1611,6 +1611,27 @@ namespace Api.Controllers.V1
         public Response pc_UploadServiceImg()
         {
             return WxappService.pc_UploadServiceImg();
+        }
+
+        [HttpGet]
+        [Route("pc_everyoneCustomers")]
+        public async Task<Response> pc_everyoneCustomers([FromUri]string userId)
+        {
+            return await WxappService.pc_everyoneCustomers(userId);
+        }
+
+        [HttpGet]
+        [Route("pc_kfSelect")]
+        public Response pc_kfSelect([FromUri]string id)
+        {
+            return WxappService.pc_GetKfSelect(id);
+        }
+        [HttpGet]
+        [AllowAnonymous]
+        [Route("pc_kfRelation")]
+        public Response kfRelation([FromUri]string id, [FromUri] string Fid)
+        {
+            return WxappService.kfRelation(id, Fid);
         }
     }
 }

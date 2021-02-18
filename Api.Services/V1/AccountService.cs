@@ -165,7 +165,9 @@ namespace Api.Services.V1
                             roleId = (int)staff["FROLEID"],
                             modules = BaseDataDao.QueryRoleHasModules((int)staff["FROLEID"]).Select(x => x.FNAME).ToList(),
                             pers = BaseDataDao.QueryRoleHasPermissions((int)staff["FROLEID"]),
-                            auth = AuthorityService.GenerateVueMenu((int)staff["FROLEID"], false)
+                            auth = AuthorityService.GenerateVueMenu((int)staff["FROLEID"], false),
+                            XCXOPENID = (string)staff["XCXOPENID"],
+                            FMOBILE = (string)staff["FMOBILE"]
                         };
                         //生成keyStr
                         var nonceStr = TimeStampHelper.ToTimeStamp(DateTime.Now) / 50 * 90;
