@@ -1541,6 +1541,7 @@ namespace Api.Services.V1
             };
         }
 
+       
 
         public Response ZXKH_GetAccessToken()
         {
@@ -1652,23 +1653,23 @@ namespace Api.Services.V1
                 item["count"] = count == "0" ? "" : count;
                 item["diffMinutes"] = DateTime.Now.Subtract(TimeStampHelper.FromTimeStamp((long)item["createtime"]).AddHours(-8)).TotalMinutes;
 
-                var result1 = WxappDao.ZXKH_QueryMyCustomerFid(fmobile);
-                foreach (var item1 in result1)
-                {
-                    if (item1["CustomerID"] == item["FID"])
+                    var result1 = WxappDao.ZXKH_QueryMyCustomerFid(fmobile);
+                    foreach (var item1 in result1)
                     {
-                        item["identity"] = "客户";
+                        if (item1["CustomerID"] == item["FID"])
+                        {
+                            item["identity"] = "客户";
+                        }
                     }
-                }
 
-                var staff = WxappDao.ZXKH_QueryMyStaffFid(fmobile);
-                foreach (var item2 in staff)
-                {
-                    if (item2["StaffID"] == item["FID"])
+                    var staff = WxappDao.ZXKH_QueryMyStaffFid(fmobile);
+                    foreach (var item2 in staff)
                     {
-                        item["identity"] = "客服";
+                        if (item2["StaffID"] == item["FID"])
+                        {
+                            item["identity"] = "客服";
+                        }
                     }
-                }
             }
 
             //result = result.Where(x => x["diffMinutes"] <= 48 * 60).ToList();
@@ -3710,6 +3711,34 @@ namespace Api.Services.V1
             {
                 return null;
             }
+        }
+        public async Task<Response> pc_everyoneCustomers(string userId)
+        {
+            if (userId == "-1")
+            {
+                return await ZXKH_QueryCustomers("18944974933");
+            }
+            else
+            {
+                return await ZXKH_QueryCustomers(WxappDao.GetTel(userId)); 
+            }
+            
+        }
+
+        public Response pc_GetKfSelect(string id)
+        {
+            return new Response
+            {
+                 Result = WxappDao.pc_GetKfSelect(id)
+            };
+        }
+        public Response kfRelation(string id, string fid)
+        {
+            WxappDao.kfRelation(id, fid);
+            return new Response
+            {
+                 Result = 1
+            };
         }
     }
 

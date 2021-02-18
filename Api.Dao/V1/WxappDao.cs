@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Api.Model.BO;
 using Api.Model.DO;
+using Api.Model.VO;
 using Api.Model.VO.WX;
 using Common.Utils;
 using NHibernate;
@@ -2264,6 +2265,43 @@ FROM      dbo.T_ESS_CHANNELSTAFF AS T_ESS_CHANNELSTAFF_1 INNER JOIN
 WHERE   (dbo.T_ESS_CHANNELSTAFF.XCXOPENID = :p1)";
             return session.CreateSQLQuery(sql)
                 .SetParameter("p1", wxopenid)
+                .List<string>().FirstOrDefault();
+        }
+
+        public IList<dynamic> pc_GetKfSelect(string id)
+        {
+            ISession session = NHSessionProvider.GetCurrentSession();
+            string sql = @"SELECT  A.FWXOPENID,A.FID, A.ISNEW, A.A3ID, l.FNUMBER FCHANNELCODE,A.FCHANNELID,A.FMOBILE,A.SALT,A.PASSWORD,B.FNAME, B.FJOB,B.FROLEID, C.FNAME AS CHANNELNAME,L.FCUSTOMERID,FCHANNELTYPEID,TTL.FNAME FCHANNELTYPENAME,CA.PICTURE,A.KHNAME
+                    FROM T_ESS_CHANNELSTAFF A LEFT JOIN T_ESS_CHANNELSTAFF_L B ON B.FID = A.FID
+                   LEFT JOIN T_ESS_CHANNEL L ON L.FCHANNELID = A.FCHANNELID  INNER JOIN T_ESS_CHANNEL_L C ON A.FCHANNELID = C.FCHANNELID
+
+                   LEFT JOIN dbo.T_ESS_CHANNELSTAFF_AVATAR CA ON CA.STAFFID = A.FID
+                   LEFT JOIN T_ESS_CHANNELTYPE_L TTL ON(TTL.FTYPEID = L.FCHANNELTYPEID AND TTL.FLOCALEID = 2052)  WHERE A.FENABLE = 1  AND B.FJOB = '客服' AND A.FID <> :p1";
+            return session.CreateSQLQuery(sql)
+                .SetParameter("p1", id)
+                .SetResultTransformer(new AliasToEntityMapResultTransformer())
+                .List<dynamic>();
+        }
+
+        public void kfRelation(string userId, string fid)
+        {
+            ISession session = NHSessionProvider.GetCurrentSession();
+            string sql = @"INSERT INTO [dbo].[T_ESS_CHANNELSTAFF_KFgl]( [zfid],[ffid])VALUES(:P1,:P2)";
+            session
+                 .CreateSQLQuery(sql)
+                 .SetParameter("P1", Convert.ToInt32(userId))
+                 .SetParameter("P2", Convert.ToInt32(fid))
+                 .ExecuteUpdate();
+        }
+
+        public string GetTel(string userId)
+        {
+            ISession session = NHSessionProvider.GetCurrentSession();
+            string sql = @"SELECT FMOBILE
+                        FROM T_ESS_CHANNELSTAFF
+                        WHERE(FID = :p1)";
+             return session.CreateSQLQuery(sql)
+                .SetParameter("p1", userId)
                 .List<string>().FirstOrDefault();
         }
     }

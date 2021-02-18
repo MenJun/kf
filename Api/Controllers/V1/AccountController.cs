@@ -46,6 +46,7 @@ namespace Api.Controllers.V1
         /// <returns></returns>
         [Route("refresh/token")]
         [AllowAnonymous]
+        [Transaction]
         [HttpGet]
         public Response RefreshToken([FromUri]string token)
         {
@@ -72,6 +73,7 @@ namespace Api.Controllers.V1
         [HttpPut]
         [ModelValidation]
         [Transaction]
+        [AllowAnonymous]
         public Response ResetPwd([FromBody] PwdVo vo)
         {
             return Service.UpdatePwd(vo);
