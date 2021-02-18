@@ -1775,6 +1775,16 @@ namespace Api.Services.V1
                 Result = results
             };
         }
+        public async Task<Response> ZXKH_User()
+        {
+            var results = WxappDao.ZXKH_User();
+
+            return new Response
+            {
+                Result = results
+            };
+        }
+        
         public async Task<Response> ZXKH_QueryApply(string fmobile)
         {
             var results = WxappDao.ZXKH_QueryApply(fmobile);
@@ -2287,8 +2297,8 @@ namespace Api.Services.V1
         /// <summary>
         /// 发送文本消息
         /// </summary>
-        /// <param name="openid"></param>
-        /// <param name="content"></param>
+        /// <param name="openid">接收者微信公众号openid</param>
+        /// <param name="fromuser">发送者名称</param>
         public void ZXKH_SendText(string openid, string content,string fromuser)
         {
             string access_token = ZXKH_IsExistAccess_Token();//微信认证
@@ -2305,8 +2315,8 @@ namespace Api.Services.V1
         /// <summary>
         /// 发送图片消息
         /// </summary>
-        /// <param name="openid"></param>
-        /// <param name="media_id"></param>
+        /// <param name="openid">接收者微信公众号openid</param>
+        /// <param name="fromuser">发送者名称</param>
         public void ZXKH_SendImage(string openid, string fromuser)
         {
             //string access_token = ZXKH_IsExistAccess_Token();//微信认证
@@ -2334,8 +2344,8 @@ namespace Api.Services.V1
         /// <summary>
         /// 发送语音消息
         /// </summary>
-        /// <param name="openid"></param>
-        /// <param name="media_id"></param>
+        /// <param name="openid">接收者微信公众号openid</param>
+        /// <param name="fromuser">发送者名称</param>
         public void ZXKH_SendVoice(string openid, string fromuser)
         {
             //string access_token = ZXKH_IsExistAccess_Token();//微信认证
@@ -3155,132 +3165,6 @@ namespace Api.Services.V1
             return new Response
             {
                 Result = data
-            };
-        }
-        /// <summary>
-        /// 微信公众号菜单手机绑定-暂时无用
-        /// </summary>
-        /// <param name="openid"></param>
-        /// <param name="FMOBILE"></param>
-        /// <returns></returns>
-        public Response ZXKH_UserInfo(string openid, string FMOBILE)
-        {
-            
-            //查询手机号是否已注册 
-            ISession session = NHSessionProvider.SessionFactory.OpenSession();
-            var sql = @"SELECT dbo.T_ESS_CHANNELSTAFF.* FROM  dbo.T_ESS_CHANNELSTAFF  WHERE  FMOBILE = :P1 OR FWXOPENID = :P2";
-            var staff = session
-                .CreateSQLQuery(sql)
-                .SetParameter("P1", FMOBILE)
-                .SetParameter("P2", openid)
-                .SetResultTransformer(new AliasToEntityMapResultTransformer())
-                .List<dynamic>()
-                .Count();
-            ZXKH_WriteTxt(sql);
-            ZXKH_WriteTxt(staff.ToString());
-            ZXKH_WriteTxt(openid);
-            ZXKH_WriteTxt("测试一");
-            if (staff == 0 && openid != "undefined")
-            {
-                
-                HttpClient client = new HttpClient();
-                string url = string.Format("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={0}&secret={1}", gzhAppId, gzhSecret);
-
-                HttpResponseMessage response = client.GetAsync(url).Result;
-                response.EnsureSuccessStatusCode();
-
-                string msg = response.Content.ReadAsStringAsync().Result;
-                dynamic data = JsonConvert.DeserializeObject<dynamic>(msg);
-
-                ZXKH_WriteTxt(msg);
-                //HttpClient client = new HttpClient();
-                url = string.Format("https://api.weixin.qq.com/cgi-bin/user/info?access_token={0}&openid={1}&lang=zh_CN", data.access_token, openid);
-                HttpResponseMessage responses = client.GetAsync(url).Result;
-                responses.EnsureSuccessStatusCode();
-
-                string msgs = responses.Content.ReadAsStringAsync().Result;
-                dynamic datas = JsonConvert.DeserializeObject<dynamic>(msgs);
-                // 以上openid获取用户信息
-
-                ChannelStaffVO vo = new ChannelStaffVO();
-                vo.ISNEW = false;
-                vo.FCHANNELID = 27;
-                vo.FMOBILE = FMOBILE;//手机号码
-                vo.FWXOPENID = openid;//openid
-                vo.FENABLE = '1';
-                vo.FTELE = "0";
-                vo.FCREATEDATE = System.DateTime.Now;
-                vo.FMODIFYDATE = System.DateTime.Now;
-                vo.FCREATORID = 0;
-                vo.FMODIFIERID = 0;
-                vo.FQQ = "0";
-                vo.ISNEW = false;
-                vo.KHNAME = datas.nickname;
-                vo.A3ID = 0;
-
-                var sql1 = "INSERT INTO[dbo].[T_ESS_CHANNELSTAFF]([FCHANNELID],[FMOBILE],[FTELE],[FQQ],[FWXOPENID],[FWECHAT],[FCREATORID],[FCREATEDATE],[FMODIFIERID],[FMODIFYDATE],[FENABLE],[SALT],[PASSWORD],[KHNAME],[KHSH],[KHZCDZ],[KHSHDZ],[KHTEL],[KHBANK],[KHBANKZH],[GENDER],[BIRTHDAY],[AREA],[ISNEW],[A3ID])";
-                sql1 += $"VALUES({ vo.FCHANNELID},'{ vo.FMOBILE}','{vo.FTELE}','{vo.FQQ}','{vo.FWXOPENID}',null,null,'{vo.FCREATEDATE}','{vo.FCREATORID}','{vo.FMODIFYDATE}','{vo.FMODIFIERID}','{vo.FENABLE}','{vo.FENABLE}','{vo.KHNAME}',null,null,null,null,null,null,null,null,null,null,{vo.A3ID})";
-                var o = session.CreateSQLQuery(sql1).ExecuteUpdate();
-
-
-                //  NHSessionProvider.GetCurrentSession().Flush();
-
-                ChannelStaffLVO staffLVO = new ChannelStaffLVO
-                {
-                    FNAME = "微信注册用户",
-                    FJOB = "客户",
-                    FREMARK = string.Empty,
-                    FROLEID = 1001
-                };
-
-
-                // ISession session1= NHSessionProvider.GetCurrentSession();
-                string sql2 = $"SELECT FID FROM  T_ESS_CHANNELSTAFF WHERE   (FWXOPENID = '{openid}')";//查询
-                var FID = session.CreateSQLQuery(sql2).List();//执行查询
-                sql2 = $"SELECT KHNAME FROM  T_ESS_CHANNELSTAFF WHERE   (FWXOPENID = '{openid}')";//查询
-                var KHNAME = session.CreateSQLQuery(sql2).List();//执行查询
-
-
-
-                sql = string.Format($"INSERT INTO [dbo].[T_ESS_CHANNELSTAFF_AVATAR] ([PICTURE],[USEWXAVATAR],[STAFFID]) VALUES('{datas.headimgurl}',{0},{FID[0]})");
-                session.CreateSQLQuery(sql).ExecuteUpdate();
-
-
-                var sql3 = string.Format($"INSERT INTO [dbo].[T_ESS_CHANNELSTAFF_L]([FPKID],[FID],[FLOCALEID],[FNAME] ,[FJOB],[FREMARK],[FROLEID]) VALUES({ FID[0]},{ FID[0]},{2052},'{KHNAME[0]}','{staffLVO.FJOB}','','{staffLVO.FROLEID}')");
-                session.CreateSQLQuery(sql3).ExecuteUpdate();
-
-
-                if (ZXKH_Staff_Customers(openid)) //判断该用户是否有客服关联，微信公众号消息发送进行人员的第一次分配
-                {
-                    ZXKH_AddShip(openid);//添加
-                    ZXKH_WriteTxt("添加哦");
-                }
-
-            }
-
-
-            string sql10 = @"SELECT * FROM dbo.T_ESS_CHANNELSTAFF WHERE FMOBILE = :P1  AND FWXOPENID IS NOT NULL";
-
-            var staff10 = session
-                .CreateSQLQuery(sql10)
-                .SetParameter("P1", FMOBILE)
-                .SetResultTransformer(new AliasToEntityMapResultTransformer())
-                .List<dynamic>()
-                .FirstOrDefault();
-            ZXKH_WriteTxt(sql10);
-            ZXKH_WriteTxt("测试二");
-            if (staff10 == null)
-            {
-                string sql11 = "update T_ESS_CHANNELSTAFF set FWXOPENID = :P2 where FMOBILE = :P1";
-                session.CreateSQLQuery(sql11)
-                .SetParameter("P1", FMOBILE)
-                .SetParameter("P2", openid)
-                .ExecuteUpdate();
-            }
-            return new Response
-            {
-                Result = 1
-
             };
         }
         public string ZXKH_WxgzhAuth(string url) {
