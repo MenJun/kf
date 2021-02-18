@@ -1032,20 +1032,58 @@ WHERE a.FWXOPENID = :p1";
         public IList<dynamic> ZXKH_QueryCustomers()
         {
             ISession session = NHSessionProvider.GetCurrentSession();
-            //            string sql = @"select a.*,ISNULL(m1.Content,'[图片]') content,m1.createtime from (SELECT a.FID,a.KHNAME,b.PICTURE,a.FWXOPENID FROM dbo.T_ESS_CHANNELSTAFF a 
-            //LEFT JOIN dbo.T_ESS_CHANNELSTAFF_AVATAR b ON a.FID=b.STAFFID 
-            //left join T_ESS_CHANNELSTAFF_L c on c.FID = a.FID
-            //left join A_ROLE d on d.FID = c.FROLEID
-            //WHERE  FWXOPENID IN (SELECT FromUserName FROM dbo.T_CUS_SERVER_MSG WHERE MsgId>=0 AND len(ToUserName) = 28 GROUP BY FromUserName)) a 
-            //LEFT JOIN (select FromUserName, MAX(id) id, MAX(CreateTime) createTime from T_CUS_SERVER_MSG  where len(ToUserName) = 28 group by FromUserName) m on m.FromUserName = a.FWXOPENID
-            //LEFT JOIN T_CUS_SERVER_MSG m1 on m1.Id = m.id";
-            string sql = @"select a.*,ISNULL(m1.Content,'[图片]') content,m1.createtime from (SELECT a.FID,a.KHNAME,b.PICTURE,a.XCXOPENID,a.FWXOPENID FROM dbo.T_ESS_CHANNELSTAFF a 
-LEFT JOIN dbo.T_ESS_CHANNELSTAFF_AVATAR b ON a.FID=b.STAFFID 
-left join T_ESS_CHANNELSTAFF_L c on c.FID = a.FID
-left join A_ROLE d on d.FID = c.FROLEID
-WHERE  XCXOPENID IN (SELECT XCXFromOpenId FROM dbo.T_CUS_SERVER_MSG WHERE MsgId>=0 AND len(XCXToOpenId) = 28 GROUP BY XCXFromOpenId)) a 
-LEFT JOIN (select XCXFromOpenId, MAX(id) id, MAX(CreateTime) createTime from T_CUS_SERVER_MSG  where len(XCXToOpenId) = 28 group by XCXFromOpenId) m on m.XCXFromOpenId = a.XCXOPENID
-LEFT JOIN T_CUS_SERVER_MSG m1 on m1.Id = m.id";
+            //string sql = @"SELECT     TOP (100) PERCENT a_1.FID, a_1.KHNAME, a_1.PICTURE, a_1.XCXOPENID, a_1.FWXOPENID, ISNULL(m1.[Content], '[图片]') AS [content], m1.CreateTime
+            //    FROM         (SELECT     a.FID, a.KHNAME, b.PICTURE, a.XCXOPENID, a.FWXOPENID
+            //           FROM          dbo.T_ESS_CHANNELSTAFF AS a LEFT OUTER JOIN
+            //                                  dbo.T_ESS_CHANNELSTAFF_AVATAR AS b ON a.FID = b.STAFFID LEFT OUTER JOIN
+            //                                  dbo.T_ESS_CHANNELSTAFF_L AS c ON c.FID = a.FID LEFT OUTER JOIN
+            //                                  dbo.A_ROLE AS d ON d.FID = c.FROLEID
+            //           WHERE      (a.XCXOPENID IN
+            //                                      (SELECT     XCXFromOpenId
+            //                                        FROM          dbo.T_CUS_SERVER_MSG
+            //                                        WHERE      (MsgId >= 0) AND (LEN(XCXToOpenId) = 28)
+            //                                        GROUP BY XCXFromOpenId))) AS a_1 LEFT OUTER JOIN
+            //              (SELECT     XCXFromOpenId, MAX(Id) AS id, MAX(CreateTime) AS CreateTime
+            //                FROM          dbo.T_CUS_SERVER_MSG AS T_CUS_SERVER_MSG_1
+            //                WHERE      (LEN(XCXToOpenId) = 28)
+            //                GROUP BY XCXFromOpenId) AS m ON m.XCXFromOpenId = a_1.XCXOPENID LEFT OUTER JOIN
+            //          dbo.T_CUS_SERVER_MSG AS m1 ON m1.Id = m.id
+            //        ORDER BY m1.CreateTime DESC";
+            string sql = @"SELECT     TOP (100) PERCENT a_1.FID, a_1.KHNAME, a_1.PICTURE, a_1.XCXOPENID, a_1.FWXOPENID, ISNULL(m1.[Content], '[图片]') AS [Content], m1.CreateTime
+                FROM         (SELECT     a.FID, a.KHNAME, b.PICTURE, a.XCXOPENID, a.FWXOPENID
+                       FROM          dbo.T_ESS_CHANNELSTAFF AS a LEFT OUTER JOIN
+                                              dbo.T_ESS_CHANNELSTAFF_AVATAR AS b ON a.FID = b.STAFFID LEFT OUTER JOIN
+                                              dbo.T_ESS_CHANNELSTAFF_L AS c ON c.FID = a.FID LEFT OUTER JOIN
+                                              dbo.A_ROLE AS d ON d.FID = c.FROLEID
+                       WHERE      (a.XCXOPENID IN
+                                                  (SELECT     XCXFromOpenId
+                                                    FROM          dbo.T_CUS_SERVER_MSG
+                                                    WHERE      (MsgId >= 0) AND (LEN(XCXToOpenId) = 28)
+                                                    GROUP BY XCXFromOpenId))) AS a_1 LEFT OUTER JOIN
+                          (SELECT     XCXFromOpenId, MAX(Id) AS id, MAX(CreateTime) AS CreateTime
+                            FROM          dbo.T_CUS_SERVER_MSG AS T_CUS_SERVER_MSG_1
+                            WHERE      (LEN(XCXToOpenId) = 28)
+                            GROUP BY XCXFromOpenId) AS m ON m.XCXFromOpenId = a_1.XCXOPENID LEFT OUTER JOIN
+                      dbo.T_CUS_SERVER_MSG AS m1 ON m1.Id = m.id
+                        union
+                SELECT   derivedtbl_1.UserFID AS FID, derivedtbl_1.GroupName AS KHNAME, derivedtbl_1.GroupImgBase64 AS PICTURE, 
+                derivedtbl_1.GroupNo AS XCXOPENID, derivedtbl_1.GroupNo AS FWXOPENID, derivedtbl_2.[Content], 
+                derivedtbl_2.CreateTime
+                FROM      (SELECT   TOP (100) PERCENT GroupID, GroupName, GroupQRcode, GroupRemarks, GroupNo, UserFID, createtime, 
+                                 GroupImgBase64, GroupState
+                 FROM      dbo.T_ESS_CHANNELSTAFF_GROUP
+                 WHERE   (GroupState = N'正常')
+                 ORDER BY createtime DESC) AS derivedtbl_1 INNER JOIN
+                    (SELECT   dbo.T_CUS_SERVER_MSG.[Content], dbo.T_CUS_SERVER_MSG.CreateTime, 
+                                     dbo.T_CUS_SERVER_MSG.XCXToOpenId
+                     FROM      dbo.T_CUS_SERVER_MSG INNER JOIN
+                                         (SELECT   XCXToOpenId, MAX(Id) AS Id
+                                          FROM      dbo.T_CUS_SERVER_MSG AS T_CUS_SERVER_MSG_1
+                                          GROUP BY XCXToOpenId
+                                          HAVING   ({ fn LENGTH(XCXToOpenId) } > '28')) AS grouplist ON 
+                                     dbo.T_CUS_SERVER_MSG.Id = grouplist.Id) AS derivedtbl_2 ON 
+                derivedtbl_1.GroupNo = derivedtbl_2.XCXToOpenId
+                ORDER BY m1.CreateTime DESC";
             return session.CreateSQLQuery(sql)
                 .SetResultTransformer(new AliasToEntityMapResultTransformer())
                 .List<dynamic>();
@@ -1148,33 +1186,68 @@ LEFT JOIN T_CUS_SERVER_MSG m1 on m1.Id = m.id";
         }
 
         /// <summary>
-        /// 我的所有消息,用手机号查询出所有用户发送给自己的消息
+        /// 我的所有消息,用手机号查询出所有用户发送给自己的消息  --目前修改为好友消息及其群消息
         /// </summary>
         /// <returns></returns>
         public IList<dynamic> ZXKH_QueryMyMessage(string fmobile)
         {
             ISession session = NHSessionProvider.GetCurrentSession();
-            string sql = @"SELECT   T_ESS_CHANNELSTAFF_2.FID, T_ESS_CHANNELSTAFF_2.KHNAME, dbo.T_ESS_CHANNELSTAFF_AVATAR.PICTURE, 
-                T_ESS_CHANNELSTAFF_2.XCXOPENID, T_ESS_CHANNELSTAFF_2.FWXOPENID, T_CUS_SERVER_MSG_2.[Content], 
-                T_CUS_SERVER_MSG_2.CreateTime
-                FROM      (SELECT   derivedtbl_1.XCXFromOpenId, derivedtbl_1.XCXToOpenId, MAX(T_CUS_SERVER_MSG_1.Id) AS id
-                 FROM      (SELECT   dbo.T_CUS_SERVER_MSG.XCXFromOpenId, dbo.T_CUS_SERVER_MSG.XCXToOpenId, 
-                                                  dbo.T_ESS_CHANNELSTAFF.FMOBILE
-                                  FROM      dbo.T_CUS_SERVER_MSG INNER JOIN
-                                                  dbo.T_ESS_CHANNELSTAFF ON 
-                                                  dbo.T_CUS_SERVER_MSG.XCXToOpenId = dbo.T_ESS_CHANNELSTAFF.XCXOPENID
-                                  GROUP BY dbo.T_CUS_SERVER_MSG.XCXFromOpenId, dbo.T_CUS_SERVER_MSG.XCXToOpenId, 
-                                                  dbo.T_ESS_CHANNELSTAFF.FMOBILE
-                                  HAVING   (dbo.T_ESS_CHANNELSTAFF.FMOBILE = :p1)) AS derivedtbl_1 INNER JOIN
-                                 dbo.T_CUS_SERVER_MSG AS T_CUS_SERVER_MSG_1 ON 
-                                 derivedtbl_1.XCXFromOpenId = T_CUS_SERVER_MSG_1.XCXFromOpenId AND 
-                                 derivedtbl_1.XCXToOpenId = T_CUS_SERVER_MSG_1.XCXToOpenId CROSS JOIN
-                                 dbo.T_ESS_CHANNELSTAFF AS T_ESS_CHANNELSTAFF_1
-                 GROUP BY derivedtbl_1.XCXFromOpenId, derivedtbl_1.XCXToOpenId) AS lastmess INNER JOIN
-                dbo.T_CUS_SERVER_MSG AS T_CUS_SERVER_MSG_2 ON lastmess.id = T_CUS_SERVER_MSG_2.Id INNER JOIN
-                dbo.T_ESS_CHANNELSTAFF AS T_ESS_CHANNELSTAFF_2 ON 
-                lastmess.XCXFromOpenId = T_ESS_CHANNELSTAFF_2.XCXOPENID INNER JOIN
-                dbo.T_ESS_CHANNELSTAFF_AVATAR ON T_ESS_CHANNELSTAFF_2.FID = dbo.T_ESS_CHANNELSTAFF_AVATAR.STAFFID";
+            //string sql = @"SELECT     TOP (100) PERCENT T_ESS_CHANNELSTAFF_2.FID, T_ESS_CHANNELSTAFF_2.KHNAME, dbo.T_ESS_CHANNELSTAFF_AVATAR.PICTURE, T_ESS_CHANNELSTAFF_2.XCXOPENID, 
+            //          T_ESS_CHANNELSTAFF_2.FWXOPENID, T_CUS_SERVER_MSG_2.[Content], T_CUS_SERVER_MSG_2.CreateTime
+            //            FROM         (SELECT     derivedtbl_1.XCXFromOpenId, derivedtbl_1.XCXToOpenId, MAX(T_CUS_SERVER_MSG_1.Id) AS id
+            //           FROM          (SELECT     dbo.T_CUS_SERVER_MSG.XCXFromOpenId, dbo.T_CUS_SERVER_MSG.XCXToOpenId, dbo.T_ESS_CHANNELSTAFF.FMOBILE
+            //                                   FROM          dbo.T_CUS_SERVER_MSG INNER JOIN
+            //                                                          dbo.T_ESS_CHANNELSTAFF ON dbo.T_CUS_SERVER_MSG.XCXToOpenId = dbo.T_ESS_CHANNELSTAFF.XCXOPENID
+            //                                   GROUP BY dbo.T_CUS_SERVER_MSG.XCXFromOpenId, dbo.T_CUS_SERVER_MSG.XCXToOpenId, dbo.T_ESS_CHANNELSTAFF.FMOBILE
+            //                                   HAVING      (dbo.T_ESS_CHANNELSTAFF.FMOBILE = :p1)) AS derivedtbl_1 INNER JOIN
+            //                                  dbo.T_CUS_SERVER_MSG AS T_CUS_SERVER_MSG_1 ON derivedtbl_1.XCXFromOpenId = T_CUS_SERVER_MSG_1.XCXFromOpenId AND 
+            //                                  derivedtbl_1.XCXToOpenId = T_CUS_SERVER_MSG_1.XCXToOpenId CROSS JOIN
+            //                                  dbo.T_ESS_CHANNELSTAFF AS T_ESS_CHANNELSTAFF_1
+            //           GROUP BY derivedtbl_1.XCXFromOpenId, derivedtbl_1.XCXToOpenId) AS lastmess INNER JOIN
+            //          dbo.T_CUS_SERVER_MSG AS T_CUS_SERVER_MSG_2 ON lastmess.id = T_CUS_SERVER_MSG_2.Id INNER JOIN
+            //          dbo.T_ESS_CHANNELSTAFF AS T_ESS_CHANNELSTAFF_2 ON lastmess.XCXFromOpenId = T_ESS_CHANNELSTAFF_2.XCXOPENID INNER JOIN
+            //          dbo.T_ESS_CHANNELSTAFF_AVATAR ON T_ESS_CHANNELSTAFF_2.FID = dbo.T_ESS_CHANNELSTAFF_AVATAR.STAFFID
+            //            ORDER BY T_CUS_SERVER_MSG_2.CreateTime DESC";
+            string sql = @"SELECT     TOP (100) PERCENT T_ESS_CHANNELSTAFF_2.FID, T_ESS_CHANNELSTAFF_2.KHNAME, dbo.T_ESS_CHANNELSTAFF_AVATAR.PICTURE, T_ESS_CHANNELSTAFF_2.XCXOPENID, 
+                      T_ESS_CHANNELSTAFF_2.FWXOPENID, T_CUS_SERVER_MSG_2.[Content], T_CUS_SERVER_MSG_2.CreateTime
+                        FROM         (SELECT     derivedtbl_1.XCXFromOpenId, derivedtbl_1.XCXToOpenId, MAX(T_CUS_SERVER_MSG_1.Id) AS id
+                       FROM          (SELECT     dbo.T_CUS_SERVER_MSG.XCXFromOpenId, dbo.T_CUS_SERVER_MSG.XCXToOpenId, dbo.T_ESS_CHANNELSTAFF.FMOBILE
+                                               FROM          dbo.T_CUS_SERVER_MSG INNER JOIN
+                                                                      dbo.T_ESS_CHANNELSTAFF ON dbo.T_CUS_SERVER_MSG.XCXToOpenId = dbo.T_ESS_CHANNELSTAFF.XCXOPENID
+                                               GROUP BY dbo.T_CUS_SERVER_MSG.XCXFromOpenId, dbo.T_CUS_SERVER_MSG.XCXToOpenId, dbo.T_ESS_CHANNELSTAFF.FMOBILE
+                                               HAVING      (dbo.T_ESS_CHANNELSTAFF.FMOBILE = :p1)) AS derivedtbl_1 INNER JOIN
+                                              dbo.T_CUS_SERVER_MSG AS T_CUS_SERVER_MSG_1 ON derivedtbl_1.XCXFromOpenId = T_CUS_SERVER_MSG_1.XCXFromOpenId AND 
+                                              derivedtbl_1.XCXToOpenId = T_CUS_SERVER_MSG_1.XCXToOpenId CROSS JOIN
+                                              dbo.T_ESS_CHANNELSTAFF AS T_ESS_CHANNELSTAFF_1
+                       GROUP BY derivedtbl_1.XCXFromOpenId, derivedtbl_1.XCXToOpenId) AS lastmess INNER JOIN
+                      dbo.T_CUS_SERVER_MSG AS T_CUS_SERVER_MSG_2 ON lastmess.id = T_CUS_SERVER_MSG_2.Id INNER JOIN
+                      dbo.T_ESS_CHANNELSTAFF AS T_ESS_CHANNELSTAFF_2 ON lastmess.XCXFromOpenId = T_ESS_CHANNELSTAFF_2.XCXOPENID INNER JOIN
+                      dbo.T_ESS_CHANNELSTAFF_AVATAR ON T_ESS_CHANNELSTAFF_2.FID = dbo.T_ESS_CHANNELSTAFF_AVATAR.STAFFID
+                       union
+                SELECT   derivedtbl_1.FID, derivedtbl_1.GroupName AS KHNAME, derivedtbl_1.GroupImgBase64 AS PICTURE, 
+                derivedtbl_1.GroupNo AS XCXOPENID, derivedtbl_1.GroupNo AS FWXOPENID, derivedtbl_2.[Content], 
+                derivedtbl_2.CreateTime
+                FROM      (SELECT   TOP (100) PERCENT dbo.T_ESS_CHANNELSTAFF.FID, dbo.T_ESS_CHANNELSTAFF.KHNAME, 
+                                 dbo.T_ESS_CHANNELSTAFF.XCXOPENID, dbo.T_ESS_CHANNELSTAFF_GROUP.GroupNo, 
+                                 dbo.T_ESS_CHANNELSTAFF_GROUP.GroupName, dbo.T_ESS_CHANNELSTAFF_GROUP.GroupImgBase64, 
+                                 dbo.T_ESS_CHANNELSTAFF_GROUP.createtime, dbo.T_ESS_CHANNELSTAFF_GROUP.GroupState
+                 FROM      dbo.T_ESS_CHANNELSTAFF INNER JOIN
+                                 dbo.T_ESS_CHANNELSTAFF_GROUPSHIP ON 
+                                 dbo.T_ESS_CHANNELSTAFF.FID = dbo.T_ESS_CHANNELSTAFF_GROUPSHIP.UserFID INNER JOIN
+                                 dbo.T_ESS_CHANNELSTAFF_GROUP ON 
+                                 dbo.T_ESS_CHANNELSTAFF_GROUPSHIP.GroupNo = dbo.T_ESS_CHANNELSTAFF_GROUP.GroupNo
+                 WHERE   (dbo.T_ESS_CHANNELSTAFF.FMOBILE = :p1) AND 
+                                 (dbo.T_ESS_CHANNELSTAFF_GROUP.GroupState = N'正常')) AS derivedtbl_1 INNER JOIN
+                    (SELECT   dbo.T_CUS_SERVER_MSG.[Content], dbo.T_CUS_SERVER_MSG.CreateTime, 
+                                     dbo.T_CUS_SERVER_MSG.XCXToOpenId
+                     FROM      dbo.T_CUS_SERVER_MSG INNER JOIN
+                                         (SELECT   XCXToOpenId, MAX(Id) AS Id
+                                          FROM      dbo.T_CUS_SERVER_MSG AS T_CUS_SERVER_MSG_1
+                                          GROUP BY XCXToOpenId
+                                          HAVING   ({ fn LENGTH(XCXToOpenId) } > '28')) AS grouplist ON 
+                                     dbo.T_CUS_SERVER_MSG.Id = grouplist.Id) AS derivedtbl_2 ON 
+                derivedtbl_1.GroupNo = derivedtbl_2.XCXToOpenId
+            ORDER BY T_CUS_SERVER_MSG_2.CreateTime DESC";
             return session.CreateSQLQuery(sql)
             .SetParameter("p1", fmobile)
            .SetResultTransformer(new AliasToEntityMapResultTransformer())
@@ -2030,7 +2103,18 @@ GROUP BY derivedtbl_1.FNAME, derivedtbl_1.FWXOPENID, derivedtbl_1.Expr2, derived
                 .List<dynamic>();
             return staff;
         }
-        
+        public void ZXKH_Message_top(string xcxopenid, string xcxopenid_top)
+        {
+            ISession session = NHSessionProvider.GetCurrentSession();
+
+            string sql = @"insert into T_CUS_SERVER_MSG_TOP values(:p1,:p2,DATEDIFF(second, '1970-01-01 08:00:00', GETDATE()))";
+
+            session
+                .CreateSQLQuery(sql)
+                .SetParameter("p1", xcxopenid)
+                .SetParameter("p2", xcxopenid_top)
+                .ExecuteUpdate();
+        }
 
         public string bbb()
         {

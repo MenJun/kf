@@ -1573,6 +1573,10 @@ namespace Api.Services.V1
             }
             return await Task.FromResult(vos);
         }
+        public void ZXKH_Message_top(string xcxopenid, string xcxopenid_top)
+        {
+            WxappDao.ZXKH_Message_top(xcxopenid, xcxopenid_top);
+        }
         public async Task<Response> ZXKH_QueryGroupMsg(string wxopenid, int page, int limit)
         {
             var result = WxappDao.ZXKH_QueryGroupMsg(wxopenid, page, limit);
@@ -1647,11 +1651,31 @@ namespace Api.Services.V1
 
             foreach (var item in result)
             {
-                var openid = (string)item["XCXOPENID"];
-                var count = RedisHelper.StringGet(openid);
-                item["count"] = count == "0" ? "" : count;
-                item["diffMinutes"] = DateTime.Now.Subtract(TimeStampHelper.FromTimeStamp((long)item["createtime"]).AddHours(-8)).TotalMinutes;
+                //var openid = (string)item["XCXOPENID"];
+                //var count = RedisHelper.StringGet(openid);
+                //item["count"] = count == "0" ? "" : count;
+                //item["diffMinutes"] = DateTime.Now.Subtract(TimeStampHelper.FromTimeStamp((long)item["CreateTime"]).AddHours(-8)).TotalMinutes;
 
+                if (item["KHNAME"] == null)
+                {
+                    var userName = WxappDao.ZXKH_GroupName(item["XCXOPENID"]);  //定义群组下面成员的名称
+                    for (int i = 0; i < userName.Count; i++)   //如果群组名称没有则用成员拼凑
+                    {
+                        if (i == 0)
+                        {
+                            item["KHNAME"] = userName[i];
+                        }
+                        else
+                        {
+                            item["KHNAME"] += "、" + userName[i];
+                            if (i > 1)
+                            {
+                                item["KHNAME"] += "...";
+                                break;
+                            }
+                        }
+                    }
+                }
                 var result1 = WxappDao.ZXKH_QueryMyCustomerFid(fmobile);
                 foreach (var item1 in result1)
                 {
@@ -1728,10 +1752,30 @@ namespace Api.Services.V1
 
             foreach (var item in results)
             {
-                var openid = (string)item["XCXOPENID"];
-                var count = RedisHelper.StringGet(openid);
-                item["count"] = count == "0" ? "" : count;
-                item["diffMinutes"] = DateTime.Now.Subtract(TimeStampHelper.FromTimeStamp((long)item["CreateTime"]).AddHours(-8)).TotalMinutes;
+                //var openid = (string)item["XCXOPENID"];
+                //var count = RedisHelper.StringGet(openid);
+                //item["count"] = count == "0" ? "" : count;
+                //item["diffMinutes"] = DateTime.Now.Subtract(TimeStampHelper.FromTimeStamp((long)item["CreateTime"]).AddHours(-8)).TotalMinutes;
+                if (item["KHNAME"] == null)
+                {
+                    var userName = WxappDao.ZXKH_GroupName(item["XCXOPENID"]);  //定义群组下面成员的名称
+                    for (int i = 0; i < userName.Count; i++)   //如果群组名称没有则用成员拼凑
+                    {
+                        if (i == 0)
+                        {
+                            item["KHNAME"] = userName[i];
+                        }
+                        else
+                        {
+                            item["KHNAME"] += "、" + userName[i];
+                            if (i > 1)
+                            {
+                                item["KHNAME"] += "...";
+                                break;
+                            }
+                        }
+                    }
+                }
                 var result = WxappDao.ZXKH_QueryMyCustomerFid(fmobile);
                 foreach (var item1 in result)
                 {

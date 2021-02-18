@@ -1037,6 +1037,20 @@ namespace Api.Controllers.V1
             return result;
         }
         /// <summary>
+        /// 微信小程序-设置置顶消息
+        /// </summary>
+        /// <param name="xcxopenid">设置人的小程序openid</param>
+        /// <param name="xcxopenid_top">被设置消息的openid</param>
+        [Route("zxkh_message_top")]
+        [AllowAnonymous]
+        [HttpGet]
+        [Transaction]
+        public void ZXKH_Message_top(string xcxopenid, string xcxopenid_top)
+        {
+            WxappService.ZXKH_Message_top(xcxopenid, xcxopenid_top);
+        }
+
+        /// <summary>
         /// 微信小程序-查询当前群聊聊天记录
         /// </summary>
         /// <param name="wxopenid">群编号</param>
