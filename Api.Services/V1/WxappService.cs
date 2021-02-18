@@ -1541,6 +1541,7 @@ namespace Api.Services.V1
             };
         }
 
+       
 
         public Response ZXKH_GetAccessToken()
         {
@@ -1550,6 +1551,8 @@ namespace Api.Services.V1
                 Result = token
             };
         }
+
+      
 
         public async Task<IList<CustomerServiceMessageVO>> ZXKH_QueryCustomerMsg(string wxopenid, string openid, int page, int limit)
         {
@@ -3638,6 +3641,32 @@ namespace Api.Services.V1
             {
                 return null;
             }
+        }
+        public async Task<Response> pc_everyoneCustomers(string userId)
+        {
+            if (userId == "-1")
+            {
+                return await ZXKH_QueryCustomers("18944974933");
+            }
+            else
+            {
+                return await ZXKH_QueryCustomers(WxappDao.GetTel(userId));
+            }
+        }
+        public Response pc_GetKfSelect(string id)
+        {
+            return new Response
+            {
+                Result = WxappDao.pc_GetKfSelect(id)
+            };
+        }
+        public Response kfRelation(string id, string fid)
+        {
+            WxappDao.kfRelation(id, fid);
+            return new Response
+            {
+                Result = 1
+            };
         }
     }
 
