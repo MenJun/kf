@@ -1552,8 +1552,6 @@ namespace Api.Services.V1
             };
         }
 
-      
-
         public async Task<IList<CustomerServiceMessageVO>> ZXKH_QueryCustomerMsg(string wxopenid, string openid, int page, int limit)
         {
             var result = WxappDao.ZXKH_QueryCustomerMessage(wxopenid, openid, page, limit);
@@ -1659,26 +1657,6 @@ namespace Api.Services.V1
                 //item["count"] = count == "0" ? "" : count;
                 //item["diffMinutes"] = DateTime.Now.Subtract(TimeStampHelper.FromTimeStamp((long)item["CreateTime"]).AddHours(-8)).TotalMinutes;
 
-                if (item["KHNAME"] == null)
-                {
-                    var userName = WxappDao.ZXKH_GroupName(item["XCXOPENID"]);  //定义群组下面成员的名称
-                    for (int i = 0; i < userName.Count; i++)   //如果群组名称没有则用成员拼凑
-                    {
-                        if (i == 0)
-                        {
-                            item["KHNAME"] = userName[i];
-                        }
-                        else
-                        {
-                            item["KHNAME"] += "、" + userName[i];
-                            if (i > 1)
-                            {
-                                item["KHNAME"] += "...";
-                                break;
-                            }
-                        }
-                    }
-                }
                 var result1 = WxappDao.ZXKH_QueryMyCustomerFid(fmobile);
                 foreach (var item1 in result1)
                 {
@@ -1688,14 +1666,14 @@ namespace Api.Services.V1
                     }
                 }
 
-                var staff = WxappDao.ZXKH_QueryMyStaffFid(fmobile);
-                foreach (var item2 in staff)
-                {
-                    if (item2["StaffID"] == item["FID"])
+                    var staff = WxappDao.ZXKH_QueryMyStaffFid(fmobile);
+                    foreach (var item2 in staff)
                     {
-                        item["identity"] = "客服";
+                        if (item2["StaffID"] == item["FID"])
+                        {
+                            item["identity"] = "客服";
+                        }
                     }
-                }
             }
 
             //result = result.Where(x => x["diffMinutes"] <= 48 * 60).ToList();
@@ -3650,14 +3628,16 @@ namespace Api.Services.V1
             }
             else
             {
-                return await ZXKH_QueryCustomers(WxappDao.GetTel(userId));
+                return await ZXKH_QueryCustomers(WxappDao.GetTel(userId)); 
             }
+            
         }
+
         public Response pc_GetKfSelect(string id)
         {
             return new Response
             {
-                Result = WxappDao.pc_GetKfSelect(id)
+                 Result = WxappDao.pc_GetKfSelect(id)
             };
         }
         public Response kfRelation(string id, string fid)
@@ -3665,7 +3645,7 @@ namespace Api.Services.V1
             WxappDao.kfRelation(id, fid);
             return new Response
             {
-                Result = 1
+                 Result = 1
             };
         }
     }
