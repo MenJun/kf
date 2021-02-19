@@ -368,7 +368,7 @@ namespace Api.Services.V1
                 Dao.Edit(item);
                 ESSChannelStaff_L staffL = AutoMapper.Mapper.Map<ESSChannelStaff_L>(vo.ChannelStaffLVOs);
                 staffL.FPKID = staff.FID;
-                staffL.FNAME = "admin";//staff.KHNAME;
+                staffL.FNAME = staff.KHNAME;
                 if (vo.FCHANNELID == 27)
                 {
                     staffL.FNAME = "微信注册用户";
