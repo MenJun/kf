@@ -1,0 +1,852 @@
+<template>
+  <div>
+    <div class="margin-top-xl margin-bottom">
+      <Row>
+        <Col span="14" offset="4">
+          <Layout class="layout">
+            <Sider ref="side1" hide-trigger collapsible :collapsed-width="78">
+              <Menu
+                mode="horizontal"
+                :theme="theme"
+                @on-select="handleMenuChange"
+                :active-name="activeMsgType"
+                class="text-center"
+              >
+                <MenuItem name="1" class="margin-left">
+                  <a href="javascript:void(0);" @click="Personal" title="我的">
+                    <Icon size="24" type="md-chatboxes" />
+                  </a>
+                </MenuItem>
+                 <MenuItem name="1"   class="margin-left">
+                 <a href="javascript:void(0);" @click="Everyone" title= "所有">
+                  <Icon size="24" type="md-chatboxes"  />
+                 </a>
+                </MenuItem>
+              </Menu>
+              <div class="divider"></div>
+              <div v-if="personal">
+                <CellGroup v-if="activeMsgType==='1'" class="text-left" @on-click="handleCellClick">
+                  <Cell
+                    v-for="(item,index) in customers1"
+                    :key="index"
+                    :name="item.xcxopenid"
+                    :selected="selectedCusId===item.xcxopenid"
+                    :title="item.khname"
+                  >
+                    <Avatar :src="item.picture" slot="icon" />
+                    <Badge :count="item.count" slot="extra" />
+                  </Cell>
+                </CellGroup>
+                <CellGroup v-else class="text-left" @on-click="handleCellClick">
+                  <Cell
+                    v-for="(item,index) in customers2"
+                    :key="index"
+                    :name="item.id"
+                    :selected="selectedCusId===item.id"
+                    :title="item.name"
+                  >
+                    <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" slot="icon" />
+                    <Badge :count="0" slot="extra" />
+                  </Cell>
+                </CellGroup>
+                <CellGroup  class="text-left" @on-click="handleCellClick1">
+                    <Cell
+                    v-for="(item,index) in customers3"
+                    :key="index"
+                    :name="item.xcxopenid"
+                    :selected="selectedCusId===item.xcxopenid"
+                    :title="item.groupName"
+                  >
+                    <Avatar :src="item.picUrl" slot="icon" />
+                    <Badge :count="item.count" slot="extra" />
+                  </Cell>
+                </CellGroup>
+              </div>
+              <div v-else>
+                <CellGroup v-if="activeMsgType==='1'" class="text-left" @on-click="handleCellClick">
+                  <Cell
+                    v-for="(item,index) in customers1"
+                    :key="index"
+                    :name="item.xcxopenid"
+                    :selected="selectedCusId===item.xcxopenid"
+                    :title="item.khname"
+                  >
+                    <Avatar :src="item.picture" slot="icon" />
+                    <Badge :count="item.count" slot="extra" />
+                  </Cell>
+                </CellGroup>
+                <CellGroup v-else class="text-left" @on-click="handleCellClick">
+                  <Cell
+                    v-for="(item,index) in customers2"
+                    :key="index"
+                    :name="item.id"
+                    :selected="selectedCusId===item.id"
+                    :title="item.name"
+                  >
+                    <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" slot="icon" />
+                    <Badge :count="0" slot="extra" />
+                  </Cell>
+                </CellGroup>
+                <CellGroup  class="text-left" @on-click="handleCellClick1">
+                    <Cell
+                    v-for="(item,index) in customers3"
+                    :key="index"
+                    :name="item.xcxopenid"
+                    :selected="selectedCusId===item.xcxopenid"
+                    :title="item.groupName"
+                  >
+                    <Avatar :src="item.picUrl" slot="icon" />
+                    <Badge :count="item.count" slot="extra" />
+                  </Cell>
+                </CellGroup>
+              </div>
+            </Sider>
+            <Layout>
+              <Content
+                :style="{margin: '10px', background: '#fff', height: '500px', 'textAlign': 'left'}"
+              >
+                <div class="margin-left margin-top" style="height:450px;overflow-y:auto;" id="dialogue_box">
+                  <div class="margin-tb-sm text-center text-gray">聊天记录</div>
+                  <div  class="divider margin-bottom-sm"></div>
+                  <div v-for="(item,index) in msgs" :key="index">
+                    <!-- 客户消息 -->
+                    <div v-if="item&&item.xcxToOpenId.length === 28">
+                        <Row v-if="item.msgId>0 || item.xcxFromOpenId === selectedCusId">
+                      <Col :xs="3" :sm="3" :md="3" :lg="2" :xl="1" :xxl="1">
+                        <Avatar :src="selectedCusAvatar" class="margin-tb-sm" />
+                      </Col>
+                      <Col :xs="20" :sm="18" :md="16" :lg="14" :xl="10" :xxl="9">
+                        <div class="text-gray margin-lr-sm">&nbsp;</div>
+                        <div v-if="item.msgType==='text'" class="bg-gray margin-lr-sm">
+                          <div class="msgbox-left"></div>
+                          <div class="padding-xs">{{item.content}}</div>
+                        </div>
+                        <div v-else-if="item.msgType==='miniprogrampage'">
+                          <div class="margin-lr-sm" v-viewer>
+                            <img
+                              :src=" item.picUrl"
+                              @click="viewer(item.picUrl)"
+                              class="margin-right"
+                              style="max-width:200px;max-height:200px;"
+                              alt
+                            />
+                            <div></div>
+                            <a href="javascript:;" @click="openWindow(item.content)">{{item.title}}</a>
+                          </div>
+                        </div>
+                        <div v-else-if="item.msgType == 'image'" class="margin-lr-sm" v-viewer>
+                          <img
+                            :src='$fileURL+item.content'
+                            @click="viewer(item.picUrl)"
+                            class="margin-right"
+                            style="max-width:200px;max-height:200px;"
+                            alt
+                          />
+                        </div>
+                         <div  v-viewer v-else-if="item.msgType == 'voice'">
+                           <m-audio :src='$fileURL+item.content'></m-audio>
+                        </div>
+                      </Col>
+                    </Row>
+                    <!-- 客服消息 -->
+                    <Row v-else>
+                      <Col :xs="1" :sm="3" :md="5" :lg="8" :xl="13" :xxl="14">
+                        <span>&nbsp;</span>
+                      </Col>
+                      <Col :xs="20" :sm="18" :md="16" :lg="14" :xl="10" :xxl="9">
+                        <div class="text-gray margin-lr-sm" style=" ">{{item.xcxFromOpenId}}</div>
+                        <div v-if="item.msgType==='text'" class="margin-lr-sm">
+                          <div class="bg-green padding-xs">{{item.content}}</div>
+                          <div class="msgbox-right"></div>
+                        </div>
+                        <div class="text-right" v-viewer v-else-if="item.msgType == 'image'">
+                          <img
+                            :src='$fileURL+item.content'
+                            @click="viewer(item.picUrl)"
+                            class="margin-right"
+                            style="width:80px;height:80px;"
+                            alt
+                          />
+                        </div>
+                        <div class="text-right" v-viewer v-else-if="item.msgType == 'voice'">
+                          <m-audio :src='$fileURL+item.content'></m-audio>
+                        </div>
+                         <div class="text-right" v-viewer v-else-if="item.msgType == 'txt'">
+                           <p>{{item.content}}</p>
+                        </div>
+                      </Col>
+                      <Col :xs="3" :sm="3" :md="3" :lg="2" :xl="1" :xxl="1">
+                        <Avatar
+                          class="margin-tb-sm"
+                          src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1585828554281&di=71fa97010f09f39292c3fe470df41b38&imgtype=0&src=http%3A%2F%2Fimg1.imgtn.bdimg.com%2Fit%2Fu%3D3112630461%2C185620365%26fm%3D214%26gp%3D0.jpg"
+                        />
+                      </Col>
+                    </Row>
+                    </div>
+                    <div v-else>
+                     <Row v-if="item.xcxFromOpenId !== '-1'">
+                      <Col :xs="3" :sm="3" :md="3" :lg="2" :xl="1" :xxl="1">
+                        <Avatar :src="item.picture" class="margin-tb-sm" />
+                      </Col>
+                      <Col :xs="20" :sm="18" :md="16" :lg="14" :xl="10" :xxl="9">
+                        <div class="text-gray margin-lr-sm">&nbsp;</div>
+                        <div v-if="item.msgType==='text'" class="bg-gray margin-lr-sm">
+                          <div class="msgbox-left"></div>
+                          <div class="padding-xs">{{item.content}}</div>
+                        </div>
+                        <div v-else-if="item.msgType==='miniprogrampage'">
+                          <div class="margin-lr-sm" v-viewer>
+                            <img
+                              :src=" item.picUrl"
+                              @click="viewer(item.picUrl)"
+                              class="margin-right"
+                              style="max-width:200px;max-height:200px;"
+                              alt
+                            />
+                            <div></div>
+                            <a href="javascript:;" @click="openWindow(item.content)">{{item.title}}</a>
+                          </div>
+                        </div>
+                        <div v-else-if="item.msgType == 'image'" class="margin-lr-sm" v-viewer>
+                          <img
+                            :src='$fileURL+item.content'
+                            @click="viewer(item.picUrl)"
+                            class="margin-right"
+                            style="max-width:200px;max-height:200px;"
+                            alt
+                          />
+                        </div>
+                         <div  v-viewer v-else-if="item.msgType == 'voice'">
+                           <m-audio :src='$fileURL+item.content'></m-audio>
+                        </div>
+                      </Col>
+                    </Row>
+                    <!-- 客服消息 -->
+                    <Row v-else>
+                      <Col :xs="1" :sm="3" :md="5" :lg="8" :xl="13" :xxl="14">
+                        <span>&nbsp;</span>
+                      </Col>
+                      <Col :xs="20" :sm="18" :md="16" :lg="14" :xl="10" :xxl="9">
+                        <div class="text-gray margin-lr-sm" style=" ">{{item.xcxFromOpenId}}</div>
+                        <div v-if="item.msgType==='text'" class="margin-lr-sm">
+                          <div class="bg-green padding-xs">{{item.content}}</div>
+                          <div class="msgbox-right"></div>
+                        </div>
+                        <div class="text-right" v-viewer v-else-if="item.msgType == 'image'">
+                          <img
+                            :src='$fileURL+item.content'
+                            @click="viewer(item.picUrl)"
+                            class="margin-right"
+                            style="width:80px;height:80px;"
+                            alt
+                          />
+                        </div>
+                        <div class="text-right" v-viewer v-else-if="item.msgType == 'voice'">
+                          <m-audio :src='$fileURL+item.content'></m-audio>
+                        </div>
+                        <div class="text-right" v-viewer v-else-if="item.msgType == 'txt'">
+                           <p>{{item.content}}</p>
+                        </div>
+                      </Col>
+                      <Col :xs="3" :sm="3" :md="3" :lg="2" :xl="1" :xxl="1">
+                        <Avatar
+                          class="margin-tb-sm"
+                          src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1585828554281&di=71fa97010f09f39292c3fe470df41b38&imgtype=0&src=http%3A%2F%2Fimg1.imgtn.bdimg.com%2Fit%2Fu%3D3112630461%2C185620365%26fm%3D214%26gp%3D0.jpg"
+                        />
+                      </Col>
+                    </Row>
+                    </div>
+                    <div class="margin-top-xs"></div>
+                  </div>
+                </div>
+                <!-- 输入框 -->
+                <div>
+                  <div class="divider"></div>
+                  <div class="margin-tb-xs">
+                    <Row>
+
+                      <Col :xs="4" :sm="4" :md="4" :lg="3" :xl="2" :xxl="2">
+                        <Upload
+                          ref="upload"
+                          :show-upload-list="false"
+                          :data="uploadData"
+                          :headers="uploadHeaders"
+                          :on-success="handleSuccess"
+                          :format="['jpg','jpeg','png','txt']"
+                          :max-size="2048"
+                          :on-format-error="handleFormatError"
+                          :before-upload="handleBeforeUpload"
+                          :on-exceeded-size="handleMaxSize"
+                          :action="uploadUrl"
+                          style="width:25px;border:none;"
+                        >
+                          <Icon type="md-image" class="margin-left" size="24" />
+                        </Upload>
+                      </Col>
+                      <Col :xs="4" :sm="4" :md="4" :lg="3" :xl="2" :xxl="2">
+                        <Upload
+                          multiple
+                          :show-upload-list="false"
+                          type="drag"
+                          ref="upload"
+                          :data="uploadData"
+                          :headers="uploadHeaders"
+                          :on-success="handleSuccess"
+                          :format="['txt','docx','pptx','ppt','doc']"
+                          :max-size="2048"
+                          :on-format-error="handleFormatError"
+                          :before-upload="handleBeforeUploadFile"
+                          :on-exceeded-size="handleMaxSize"
+                          :action="uploadUrl"
+                          style="width:25px;border:none;">
+                            <div style="">
+                                <Icon type="ios-cloud-upload" size="24" style="color: #3399ff"></Icon>
+                                <p></p>
+                            </div>
+                        </Upload>
+                      </Col>
+                    </Row>
+                  </div>
+                  <Input
+                    id="msgInputBox"
+                    v-model="chatMsg"
+                    @keydown.enter.native.prevent="handleSubmit"
+                    type="textarea"
+                    :autosize="{maxRows: 2, minRows: 2}"
+                    placeholder="输入回复内容，按回车键发送消息"
+                  ></Input>
+                </div>
+              </Content>
+            </Layout>
+          </Layout>
+        </Col>
+      </Row>
+    </div>
+  </div>
+</template>
+
+<script>
+// import $ from 'jquery'
+import signalr from '../utils/signalr'
+import helper from '../utils/helper'
+import VEmojiPicker from 'v-emoji-picker'
+export default {
+  components: {
+    VEmojiPicker
+  },
+  data () {
+    return {
+      personal: true,
+      everyone: false,
+      path: '',
+      theme: 'light',
+      userId: 0,
+      showEmojiBox: false,
+      uploadData: {
+        msgType: '',
+        content: '',
+        toUserName: '',
+        FromUserName: '',
+        XCXToOpenId: '',
+        XCXFromOpenId: ''
+      },
+      activeMsgType: '1',
+      wxMsgObj: null,
+      chatMsg: '',
+      uploadUrl: `${this.$fileURL}api/wxapp/pc_upload/service?api-version=1`,
+      uploadHeaders: {
+        Authorization: 'Bearer ' + sessionStorage.getItem('token')
+      },
+      msgs: [],
+      customers1: [],
+      customers2: [],
+      customers3: [],
+      selectedCusId: '',
+      selectedCusAvatar: '',
+      page: 1,
+      limit: 1000,
+      websock: null,
+      Last: null
+    }
+  },
+  mounted () {
+    let that = this
+    signalr.connection().on('notify', data => {
+      console.log(data)
+      console.log(that.customers1)
+      let customer = null
+      try {
+        if (data.xcxopenid.length === 28) {
+          customer = that.customers1.filter(x => x.xcxToOpenId === data.xcxopenid)[0]
+        } else {
+          customer = that.customers3.filter(x => x.xcxopenid === data.xcxopenid)[0]
+        }
+      } catch (error) {
+        if (data.XCXToOpenId.length > 28) {
+          customer = that.customers3.filter(x => x.xcxopenid === data.XCXToOpenId)[0]
+          that.loadMessage1()
+        } else {
+          // if (data.xcxopenid) {
+          // alert(data.XCXFromOpenId)
+          let xcxopenid = data.XCXFromOpenId
+          customer = that.customers1.filter(x => x.xcxopenid === xcxopenid)[0]
+          console.log(customer)
+          // } else {
+          //   alert(112)
+          //   customer = that.customers1.filter(x => x.xcxToOpenId === data.XCXFromOpenId)[0]
+          //   console.log(customer)
+          // }
+        }
+      }
+      console.log(customer)
+      if (data.XCXFromOpenId !== '-1') {
+        if (customer) {
+          // alert(1)
+          console.log(customer.xcxopenid + '=========' + that.selectedCusId)
+          if (customer.xcxopenid !== that.selectedCusId) {
+            // if (data.FromUserName !== -1) {
+            customer.count++
+            console.log(customer.count)
+            // that.msgs.push(data)
+            // }
+            // that.loadMessage1()
+          } else {
+            // alert(2)
+            try {
+              console.log('=============================')
+              console.log(data)
+              console.log('=============================')
+              if (data.XCXToOpenId.length <= 28) {
+                that.loadMessage()
+              } else {
+                that.loadMessage1()
+              }
+            } catch (error) {
+              if (data.XCXToOpenId.length <= 28) {
+                that.loadMessage()
+              } else {
+                that.loadMessage1()
+              }
+            }
+          }
+        } else {
+          data.avatar = 'https://i.loli.net/2017/08/21/599a521472424.jpg'
+          if (data.picture && data.picture !== '') {
+            data.picture = data.picture
+          }
+          data.name = data.FromUserName
+          data.count = 1
+          // alert(12)
+          if (data.XCXToOpenId.length > 28) {
+            that.shuangxi()
+          } else {
+            // alert(123)
+            // that.customers1.push(data)
+            that.rshu()
+          }
+        }
+      }
+      var ele = document.getElementById('dialogue_box')
+      if (ele.scrollHeight > ele.clientHeight) {
+        // 设置滚动条到最底部
+        ele.scrollTop = ele.scrollHeight
+      }
+    })
+    let result = helper.parsePayload()
+    that.userId = result.userId
+    if (that.personal) {
+      // 用户列表
+      that.queryCustomers()
+    }
+    if (that.everyone) {
+      // 所有列表
+      that.everyoneCustomers()
+    }
+    var ele = document.getElementById('dialogue_box')
+    if (ele.scrollHeight > ele.clientHeight) {
+      // 设置滚动条到最底部
+      ele.scrollTop = ele.scrollHeight
+    }
+  },
+  methods: {
+    Personal () {
+      // alert(123)
+      this.everyone = true
+      this.personal = true
+      this.queryCustomers()
+    },
+    Everyone () {
+      this.personal = false
+      this.everyone = false
+      this.everyoneCustomers()
+    },
+    selectEmoji (emoji) {
+      console.log(emoji)
+      this.showEmojiBox = false
+    },
+    shuangxi () {
+      let that = this
+      const url1 = '/api/wxapp/pc_zxkh_allgrouplist?api-version=1'
+      this.$http.get(url1)
+        .then(function (response) {
+          let data = response.data.result
+          that.customers3 = null
+          that.customers3 = data
+
+          console.log(that.customers3)
+        })
+    },
+    rshu () {
+      let that = this
+      const url = 'api/wxapp/pc_customers?api-version=1'
+      that.$http.get(url)
+        .then(function (response) {
+          if (response.data) {
+            let data = response.data.result
+            data.forEach(element => {
+              // element.count = 0
+              if (element.picture && element.picture.indexOf('https') < 0) {
+                element.picture = element.picture
+              }
+            })
+            that.customers1 = data
+          }
+        })
+    },
+    // 用户列表
+    queryCustomers () {
+      let that = this
+      const url = 'api/wxapp/pc_customers?api-version=1'
+      that.$http.get(url)
+        .then(function (response) {
+          if (response.data) {
+            let data = response.data.result
+            data.forEach(element => {
+              // element.count = 0
+              if (element.picture && element.picture.indexOf('https') < 0) {
+                element.picture = element.picture
+              }
+            })
+            that.customers1 = data
+          }
+        })
+      const url1 = '/api/wxapp/pc_zxkh_allgrouplist?api-version=1'
+      that.$http.get(url1)
+        .then(function (response) {
+          let data = response.data.result
+          that.customers3 = data
+          console.log(that.customers3)
+        })
+    },
+    // 所有列表
+    everyoneCustomers () {
+      console.log(helper.parsePayload())
+      let that = this
+      const url = 'api/wxapp/pc_everyoneCustomers?api-version=1'
+      that.$http.get(url)
+        .then(function (response) {
+          if (response.data) {
+            console.log(response.data)
+            let data = response.data.result
+            // data.forEach(element => {
+            //   // element.count = 0
+            //   if (element.picture && element.picture.indexOf('https') < 0) {
+            //     element.picture = element.picture
+            //   }
+            // })
+            console.log(data)
+            that.customers1 = data
+          }
+        })
+      const url1 = '/api/wxapp/pc_zxkh_allgrouplist?api-version=1'
+      that.$http.get(url1)
+        .then(function (response) {
+          let data = response.data.result
+          that.customers3 = data
+          console.log(that.customers3)
+        })
+    },
+    // 查询消息
+    handleSubmit () {
+      let that = this
+      if (that.selectedCusId === '') {
+        return false
+      }
+      if (that.chatMsg === '') {
+        that.$Message.info('发送内容不能为空，请重新输入。')
+        return false
+      }
+      // alert(123)
+      const url = 'api/wxapp/ZXKH_sendMsg?api-version=1'
+      let obj = {}
+      obj.content = that.chatMsg
+      this.customers1.forEach(res => {
+        if (res.xcxopenid === that.selectedCusId) {
+          obj.toUserName = res.fwxopenid
+        }
+      })
+      obj.FromUserName = that.userId
+      obj.xcxToOpenId = that.selectedCusId // 接收人
+      // try {
+      //   // alert(12)
+      //   that.msgs.forEach(res => {
+      //     console.log(res.xcxToOpenId + ' === ' + that.selectedCusId)
+      //     if (res.xcxToOpenId !== that.selectedCusId) {
+      //       obj.XCXFromOpenId = res.xcxToOpenId // 发送人
+      //       // throw Error()
+      //     }
+      //   })
+      // } catch (error) {
+      //   // console.log('结束循环')
+      // }
+      obj.XCXFromOpenId = that.userId.toString() // 发送人
+      // alert(123)
+      obj.msgType = 'text'
+      // if (that.selectedCusId.length !== 28) {
+      //   if (obj.XCXFromOpenId === undefined) {
+      //     alert('bobo')
+      //     this.lastgroup(that.selectedCusId)
+      //   }
+      // }
+      console.log(obj)
+      that.$http.post(url, obj)
+        .then(function (response) {
+          if (response.data) {
+            // alert(obj.xcxFromOpenId)
+            obj.xcxFromOpenId = obj.XCXFromOpenId // 发送人
+            console.log(obj)
+            that.msgs.push(obj)
+            that.chatMsg = ''
+
+            try {
+              if (that.selectedCusId.length === 28) {
+                let customer = that.customers1.filter(x => x.xcxopenid === that.selectedCusId)[0]
+                console.log(customer)
+                customer.count = 0
+              } else {
+                let customer = that.customers3.filter(x => x.xcxopenid === that.selectedCusId)[0]
+                console.log(customer)
+                customer.count = 0
+                // alert('liuyang')
+              }
+            } catch (error) {
+              let customer = that.customers3.filter(x => x.xcxopenid === that.selectedCusId)[0]
+              console.log(customer)
+              customer.count = 0
+            }
+          }
+        })
+    },
+    handleCellClick (value) {
+      // alert(value)
+      let that = this
+      that.selectedCusId = value
+      that.selectedCusAvatar = that.customers1.filter(x => x.xcxopenid === value)[0].picture
+      that.loadMessage()
+    },
+    handleCellClick1 (value) {
+      // alert(value)
+      let that = this
+      that.selectedCusId = value
+      that.selectedCusAvatar = that.customers3.filter(x => x.xcxopenid === value)[0].picture
+      that.loadMessage1()
+    },
+    handleFormatError (file) {
+      this.$notification.error('文件 ' + file.name + ' 是不支持的类型！')
+    },
+    handleMaxSize (file) {
+      this.$notification.error('文件 ' + file.name + ' 超出文件大小限制，只能上传2M以内的图片！')
+    },
+    async  handleBeforeUpload (file) {
+      let that = this
+      let obj = {}
+      obj.content = ''
+      this.customers1.forEach(res => {
+        if (res.xcxopenid === that.selectedCusId) {
+          obj.toUserName = res.fwxopenid
+        }
+      })
+      obj.FromUserName = '' // that.userId
+      obj.XCXToOpenId = that.selectedCusId // 接收人
+      obj.XCXFromOpenId = that.userId.toString()
+      obj.msgType = 'txt'
+      that.uploadData = {'msgType': obj.msgType, 'content': '', 'toUserName': obj.toUserName, 'FromUserName': '', 'XCXToOpenId': obj.XCXToOpenId, 'XCXFromOpenId': obj.XCXFromOpenId}
+      console.log(that.uploadData)
+    },
+    async  handleBeforeUploadFile (file) {
+      let that = this
+      let obj = {}
+      obj.content = ''
+      this.customers1.forEach(res => {
+        if (res.xcxopenid === that.selectedCusId) {
+          obj.toUserName = res.fwxopenid
+        }
+      })
+      obj.FromUserName = '' // that.userId
+      obj.XCXToOpenId = that.selectedCusId // 接收人
+      obj.XCXFromOpenId = that.userId.toString()
+      obj.msgType = 'txt'
+      that.uploadData = {'msgType': obj.msgType, 'content': '', 'toUserName': obj.toUserName, 'FromUserName': '', 'XCXToOpenId': obj.XCXToOpenId, 'XCXFromOpenId': obj.XCXFromOpenId}
+      console.log(that.uploadData)
+    },
+
+    handleSuccess () {
+      // if (condition) {
+      // alert(1298)
+      this.loadMessage()
+      // } else {
+      this.loadMessage1()
+      // }
+    },
+    // 加载数据
+    loadMessage () {
+      let that = this
+      // let obj = that.customers1.filter(x => x.fwxopenid === that.selectedCusId)[0]
+      // obj.count = 0
+      // console.log(that.selectedCusId)'&openid=' + user.fwxopenid +
+      // let user = that.customers1.filter(x => x.xcxopenid === that.selectedCusId)[0]
+      // console.log(user)
+      // if (user === undefined) {
+      // }
+      const url = 'api/wxapp/pc_customerMsg?api-version=1&wxopenid=' + that.selectedCusId + '&page=' + that.page + '&limit=' + that.limit
+      that.$http.get(url)
+        .then(response => {
+          console.log(response)
+          let data = response.data
+          data.forEach(item => {
+            item.date = helper.timestampToDate(item.createTime)
+            if (item.msgType !== 'text') {
+              item.picUrl = that.$fileURL + '/' + item.picUrl
+            }
+          })
+          that.msgs = data
+          console.log(that.msgs)
+        })
+      var ele = document.getElementById('dialogue_box')
+      if (ele.scrollHeight > ele.clientHeight) {
+        // 设置滚动条到最底部
+        ele.scrollTop = ele.scrollHeight
+      }
+    },
+    loadMessage1 () {
+      let that = this
+      // alert(that.selectedCusId)
+      const url1 = 'api/wxapp/pc_zxkh_groupMsg?api-version=1&wxopenid=' + that.selectedCusId + '&page=' + that.page + '&limit=' + that.limit
+      that.$http.get(url1)
+        .then(response => {
+          let data = response.data.result
+          // console.log(data)
+          data.forEach(item => {
+            item.date = helper.timestampToDate(item.createTime)
+            if (item.msgType !== 'text') {
+              item.picUrl = that.$fileURL + '/' + item.picUrl
+            }
+          })
+          that.msgs = data
+          // console.log(that.msgs)
+        })
+      var ele = document.getElementById('dialogue_box')
+      if (ele.scrollHeight > ele.clientHeight) {
+        // 设置滚动条到最底部
+        ele.scrollTop = ele.scrollHeight
+      }
+    },
+    handleMenuChange (value) {
+      this.activeMsgType = value
+    },
+    openWindow (goodsId) {
+      let that = this
+      let routeData = that.$router.resolve({
+        name: 'Wares',
+        query: { id: goodsId }
+      })
+      window.open(routeData.href, '_blank')
+    },
+    viewer (url) {
+      const viewer = this.$el.$viewer
+      viewer.view()
+      viewer.options.toolbar = {
+        zoomIn: 1,
+        zoomOut: 1,
+        oneToOne: 1,
+        reset: 1,
+        prev: 1,
+        play: 0,
+        next: 1,
+        rotateLeft: 1,
+        rotateRight: 1,
+        flipHorizontal: 1,
+        flipVertical: 1
+      }
+      viewer.view({ url: url })
+    },
+    customerClick () {
+      console.log('>>>>>>>>>>>>>')
+    }
+  }
+}
+</script>
+<style scoped>
+>>> .layout {
+  box-shadow: 1px 1px 35px #ddd;
+  height: 600px;
+}
+>>> .ivu-layout-sider {
+  background: #fff;
+  border-bottom: 10px solid #f5f7f9;
+}
+>>> .ivu-cell {
+  background: #fff;
+  height: 50px;
+}
+>>> .ivu-cell:hover {
+  background: #f5f7f9;
+  color: #515a6e;
+}
+>>> .ivu-cell-selected {
+  background: #eee;
+  color: #515a6e;
+}
+>>> #msgInputBox textarea.ivu-input {
+  border: none;
+}
+>>> #msgInputBox textarea,
+textarea.ivu-input:hover,
+textarea:focus {
+  -webkit-box-shadow: none;
+  box-shadow: none;
+}
+.divider {
+  height: 1px;
+  border: none;
+  background: #eee;
+}
+.msgbox-left::before {
+  content: '';
+  position: absolute;
+  left: -35px;
+  top: -20px;
+  width: 10px;
+  height: 10px;
+  margin: 50px;
+  transform: rotate(-45deg);
+  background: #eee;
+  z-index: 0;
+  border-top: 2px solid #eee;
+  border-left: 2px solid #eee;
+}
+.msgbox-right::before {
+  content: '';
+  position: absolute;
+  right: -35px;
+  top: -20px;
+  width: 10px;
+  height: 10px;
+  margin: 50px;
+  transform: rotate(45deg);
+  background: #39b54a;
+  z-index: 0;
+  border-top: 2px solid #39b54a;
+  border-left: 2px solid #39b54a;
+}
+</style>
