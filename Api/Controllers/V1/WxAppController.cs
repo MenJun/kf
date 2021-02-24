@@ -97,7 +97,7 @@ namespace Api.Controllers.V1
         [Route("{wxopenid}/shares")]
         [HttpGet]
         [Transaction]
-        public Response QueryShares([FromUri]string wxopenid,[FromUri]int page, [FromUri]int pageSize)
+        public Response QueryShares([FromUri]string wxopenid, [FromUri]int page, [FromUri]int pageSize)
         {
             return WxappService.QueryShares(wxopenid, page, pageSize);
         }
@@ -134,7 +134,7 @@ namespace Api.Controllers.V1
         [Route("upload/service")]
         public Response UploadServiceImg()
         {
-            return WxappService.UploadServiceImg(); 
+            return WxappService.UploadServiceImg();
         }
 
         /// <summary>
@@ -373,7 +373,7 @@ namespace Api.Controllers.V1
             return WxappService.Kd100Sub(orderNum);
         }
 
-      
+
 
         /// <summary>
         /// 创建小程序码
@@ -482,7 +482,7 @@ namespace Api.Controllers.V1
         }
 
 
-        
+
 
         /// <summary>
         /// 查询客户聊天记录
@@ -494,7 +494,7 @@ namespace Api.Controllers.V1
         [Route("customerMsg")]
         [HttpGet]
         [Transaction]
-        public async Task<IList<CustomerServiceMessageVO>> QueryCustomerMsg([FromUri]string wxopenid,[FromUri]int page, [FromUri]int limit)
+        public async Task<IList<CustomerServiceMessageVO>> QueryCustomerMsg([FromUri]string wxopenid, [FromUri]int page, [FromUri]int limit)
         {
             var result = await WxappService.QueryCustomerMsg(wxopenid, page, limit);
 
@@ -526,7 +526,7 @@ namespace Api.Controllers.V1
         [Transaction]
         public async Task<string> SendServiceMsg([FromBody]CustomerServiceMessage serviceMessage)
         {
-            var message =  await WxappService.SendCustomerMsg(serviceMessage);
+            var message = await WxappService.SendCustomerMsg(serviceMessage);
 
             var hub = GlobalHost.ConnectionManager.GetHubContext<MessageHub>();
 
@@ -557,7 +557,7 @@ namespace Api.Controllers.V1
 
         public string jjj()
         {
-           return "以下新加";
+            return "以下新加";
         }
 
         /// <summary>
@@ -690,6 +690,7 @@ namespace Api.Controllers.V1
         [Route("zxkh_mymessage")]
         [HttpGet]
         [Transaction]
+        [AllowAnonymous]
         public async Task<Response> ZXKH_QueryMyMessage(string fmobile)
         {
             var results = await WxappService.ZXKH_QueryMyMessage(fmobile);
@@ -1045,9 +1046,22 @@ namespace Api.Controllers.V1
         [AllowAnonymous]
         [HttpGet]
         [Transaction]
-        public void ZXKH_Message_top(string xcxopenid, string xcxopenid_top)
+        public int ZXKH_Message_top(string xcxopenid, string xcxopenid_top)
         {
-            WxappService.ZXKH_Message_top(xcxopenid, xcxopenid_top);
+            return WxappService.ZXKH_Message_top(xcxopenid, xcxopenid_top);
+        }
+        /// <summary>
+        /// 微信小程序-取消置顶消息
+        /// </summary>
+        /// <param name="xcxopenid">设置人的小程序openid</param>
+        /// <param name="xcxopenid_top">被设置消息的openid</param>
+        [Route("zxkh_message_canceltop")]
+        [AllowAnonymous]
+        [HttpGet]
+        [Transaction]
+        public void ZXKH_Message_canceltop(string xcxopenid, string xcxopenid_top)
+        {
+            WxappService.ZXKH_Message_canceltop(xcxopenid, xcxopenid_top);
         }
 
         /// <summary>
@@ -1328,6 +1342,7 @@ namespace Api.Controllers.V1
             //WebTool.ResponseMsg(requestStr);//调用消息适配器
             //用户发送信息保存到数据库
         }
+
         /// <summary>
         /// 微信小程序-用户发送消息给用户，包括到公众号
         /// </summary>
@@ -1338,7 +1353,7 @@ namespace Api.Controllers.V1
         [HttpPost]
         [Transaction]
         public Response ZXKH_sendMsg([FromBody]CustomerServiceMessage obj)
-          {
+         {
             if (false)
             {
                 // 获取客服 obj.FromUserName == "-1" && obj.XCXToOpenId.Length > 28
@@ -1405,10 +1420,10 @@ namespace Api.Controllers.V1
                 }
                 WxappService.ZXKH_savemessage(obj);
 
-                //获取发送者的头像
-                var results = WxappService.ZXKH_QueryPicture(obj.XCXFromOpenId);
-                obj.PicUrl = (string)results["PICTURE"];
-                obj.KHNAME = (string)results["KHNAME"];
+                //获取发送者的头像  暂时注释
+                //var results = WxappService.ZXKH_QueryPicture(obj.XCXFromOpenId);
+                //obj.PicUrl = (string)results["PICTURE"];
+                //obj.KHNAME = (string)results["KHNAME"];
                 var hub = GlobalHost.ConnectionManager.GetHubContext<MessageHub>();
                 hub.Clients.All.notify(obj);
                 //var staff = WxappService.ZXKH_QueryFID(obj.XCXToOpenId);
@@ -1482,10 +1497,30 @@ namespace Api.Controllers.V1
         {
             return WxappService.ZXKH_WxgzhAuth(url);
         }
+        [AllowAnonymous]
+        [Route("zxkh_gzhpath")]
+        [HttpPost]
+        [Transaction]
+        public int ZXKH_gzhpath(string openid)
+        {
+            return WxappService.ZXKH_gzhpath(openid);
+        }
+        [HttpPost]
+        [Route("upload/file")]
+        public Response UploadFile()
+        {
+            //return WxappService.UploadFile();
+            var result = WxappService.pc_UploadServiceImg();
+            var hub = GlobalHost.ConnectionManager.GetHubContext<MessageHub>();
+            //hub.Clients.All.notify(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+            hub.Clients.All.notify(result.Result);
+            return result;
+        }
         public string bbb()
         {
             return "以上新加";
         }
+        
 
         /// <summary>
         /// pc用户列表

@@ -1209,7 +1209,9 @@ WHERE a.FWXOPENID = :p1";
             //          dbo.T_ESS_CHANNELSTAFF AS T_ESS_CHANNELSTAFF_2 ON lastmess.XCXFromOpenId = T_ESS_CHANNELSTAFF_2.XCXOPENID INNER JOIN
             //          dbo.T_ESS_CHANNELSTAFF_AVATAR ON T_ESS_CHANNELSTAFF_2.FID = dbo.T_ESS_CHANNELSTAFF_AVATAR.STAFFID
             //            ORDER BY T_CUS_SERVER_MSG_2.CreateTime DESC";
-            string sql = @"SELECT     TOP (100) PERCENT T_ESS_CHANNELSTAFF_2.FID, T_ESS_CHANNELSTAFF_2.KHNAME, dbo.T_ESS_CHANNELSTAFF_AVATAR.PICTURE, T_ESS_CHANNELSTAFF_2.XCXOPENID, 
+            string sql = @"SELECT t.FID, t.KHNAME, t.PICTURE, t.XCXOPENID, 
+                      t.FWXOPENID, t.[Content], t.CreateTime FROM
+((SELECT     TOP (100) PERCENT T_ESS_CHANNELSTAFF_2.FID, T_ESS_CHANNELSTAFF_2.KHNAME, dbo.T_ESS_CHANNELSTAFF_AVATAR.PICTURE, T_ESS_CHANNELSTAFF_2.XCXOPENID, 
                       T_ESS_CHANNELSTAFF_2.FWXOPENID, T_CUS_SERVER_MSG_2.[Content], T_CUS_SERVER_MSG_2.CreateTime
                         FROM         (SELECT     derivedtbl_1.XCXFromOpenId, derivedtbl_1.XCXToOpenId, MAX(T_CUS_SERVER_MSG_1.Id) AS id
                        FROM          (SELECT     dbo.T_CUS_SERVER_MSG.XCXFromOpenId, dbo.T_CUS_SERVER_MSG.XCXToOpenId, dbo.T_ESS_CHANNELSTAFF.FMOBILE
@@ -1223,9 +1225,9 @@ WHERE a.FWXOPENID = :p1";
                        GROUP BY derivedtbl_1.XCXFromOpenId, derivedtbl_1.XCXToOpenId) AS lastmess INNER JOIN
                       dbo.T_CUS_SERVER_MSG AS T_CUS_SERVER_MSG_2 ON lastmess.id = T_CUS_SERVER_MSG_2.Id INNER JOIN
                       dbo.T_ESS_CHANNELSTAFF AS T_ESS_CHANNELSTAFF_2 ON lastmess.XCXFromOpenId = T_ESS_CHANNELSTAFF_2.XCXOPENID INNER JOIN
-                      dbo.T_ESS_CHANNELSTAFF_AVATAR ON T_ESS_CHANNELSTAFF_2.FID = dbo.T_ESS_CHANNELSTAFF_AVATAR.STAFFID
+                      dbo.T_ESS_CHANNELSTAFF_AVATAR ON T_ESS_CHANNELSTAFF_2.FID = dbo.T_ESS_CHANNELSTAFF_AVATAR.STAFFID)
                        union
-                SELECT   derivedtbl_1.FID, derivedtbl_1.GroupName AS KHNAME, derivedtbl_1.GroupImgBase64 AS PICTURE, 
+                (SELECT   derivedtbl_1.FID, derivedtbl_1.GroupName AS KHNAME, derivedtbl_1.GroupImgBase64 AS PICTURE, 
                 derivedtbl_1.GroupNo AS XCXOPENID, derivedtbl_1.GroupNo AS FWXOPENID, derivedtbl_2.[Content], 
                 derivedtbl_2.CreateTime
                 FROM      (SELECT   TOP (100) PERCENT dbo.T_ESS_CHANNELSTAFF.FID, dbo.T_ESS_CHANNELSTAFF.KHNAME, 
@@ -1237,7 +1239,7 @@ WHERE a.FWXOPENID = :p1";
                                  dbo.T_ESS_CHANNELSTAFF.FID = dbo.T_ESS_CHANNELSTAFF_GROUPSHIP.UserFID INNER JOIN
                                  dbo.T_ESS_CHANNELSTAFF_GROUP ON 
                                  dbo.T_ESS_CHANNELSTAFF_GROUPSHIP.GroupNo = dbo.T_ESS_CHANNELSTAFF_GROUP.GroupNo
-                 WHERE   (dbo.T_ESS_CHANNELSTAFF.FMOBILE = :p1) AND 
+                 WHERE   (dbo.T_ESS_CHANNELSTAFF.FMOBILE = :p2) AND 
                                  (dbo.T_ESS_CHANNELSTAFF_GROUP.GroupState = N'正常')) AS derivedtbl_1 INNER JOIN
                     (SELECT   dbo.T_CUS_SERVER_MSG.[Content], dbo.T_CUS_SERVER_MSG.CreateTime, 
                                      dbo.T_CUS_SERVER_MSG.XCXToOpenId
@@ -1247,10 +1249,13 @@ WHERE a.FWXOPENID = :p1";
                                           GROUP BY XCXToOpenId
                                           HAVING   ({ fn LENGTH(XCXToOpenId) } > '28')) AS grouplist ON 
                                      dbo.T_CUS_SERVER_MSG.Id = grouplist.Id) AS derivedtbl_2 ON 
-                derivedtbl_1.GroupNo = derivedtbl_2.XCXToOpenId
-            ORDER BY T_CUS_SERVER_MSG_2.CreateTime DESC";
+                derivedtbl_1.GroupNo = derivedtbl_2.XCXToOpenId)
+                ) t
+            ORDER BY t.CreateTime DESC
+            OPTION(RECOMPILE)";
             return session.CreateSQLQuery(sql)
-            .SetParameter("p1", fmobile)
+            .SetAnsiString("p1", fmobile)
+            .SetAnsiString("p2", fmobile)
            .SetResultTransformer(new AliasToEntityMapResultTransformer())
            .List<dynamic>();
         }
@@ -2104,6 +2109,18 @@ GROUP BY derivedtbl_1.FNAME, derivedtbl_1.FWXOPENID, derivedtbl_1.Expr2, derived
                 .List<dynamic>();
             return staff;
         }
+        public int ZXKH_Message_Selecttop(string xcxopenid, string xcxopenid_top)
+        {
+            ISession session = NHSessionProvider.GetCurrentSession();
+
+            string sql = @"select * from T_CUS_SERVER_MSG_TOP where XCXOPENID = :p1 AND XCXOPENID_TOP = :p2";
+
+            return session
+                .CreateSQLQuery(sql)
+                .SetParameter("p1", xcxopenid)
+                .SetParameter("p2", xcxopenid_top)
+                .List<dynamic>().Count;
+        }
         public void ZXKH_Message_top(string xcxopenid, string xcxopenid_top)
         {
             ISession session = NHSessionProvider.GetCurrentSession();
@@ -2116,6 +2133,48 @@ GROUP BY derivedtbl_1.FNAME, derivedtbl_1.FWXOPENID, derivedtbl_1.Expr2, derived
                 .SetParameter("p2", xcxopenid_top)
                 .ExecuteUpdate();
         }
+        public void ZXKH_Message_canceltop(string xcxopenid, string xcxopenid_top)
+        {
+            ISession session = NHSessionProvider.GetCurrentSession();
+
+            string sql = @"delete from T_CUS_SERVER_MSG_TOP where XCXOPENID = :p1 AND XCXOPENID_TOP = :p2";
+
+            session
+                .CreateSQLQuery(sql)
+                .SetParameter("p1", xcxopenid)
+                .SetParameter("p2", xcxopenid_top)
+                .ExecuteUpdate();
+        }
+        public int ZXKH_Message_seaktop(string phone,string xcxopenid)
+        {
+            ISession session = NHSessionProvider.GetCurrentSession();
+
+            string sql = @"SELECT   dbo.T_ESS_CHANNELSTAFF.FMOBILE, dbo.T_ESS_CHANNELSTAFF.XCXOPENID, 
+                dbo.T_CUS_SERVER_MSG_TOP.XCXOPENID_TOP, dbo.T_CUS_SERVER_MSG_TOP.CreateTime
+                FROM      dbo.T_ESS_CHANNELSTAFF INNER JOIN
+                dbo.T_CUS_SERVER_MSG_TOP ON 
+                dbo.T_ESS_CHANNELSTAFF.XCXOPENID = dbo.T_CUS_SERVER_MSG_TOP.XCXOPENID
+                WHERE   (dbo.T_ESS_CHANNELSTAFF.FMOBILE = :p1) AND 
+                (dbo.T_CUS_SERVER_MSG_TOP.XCXOPENID_TOP = :p2)";
+
+            return session
+                .CreateSQLQuery(sql)
+                .SetParameter("p1", phone)
+                .SetParameter("p2", xcxopenid)
+                .List<dynamic>().Count;
+        }
+        public int ZXKH_gzhpath(string openid)
+        {
+            ISession session = NHSessionProvider.GetCurrentSession();
+
+            string sql = @"  select * from T_ESS_CHANNELSTAFF where FWXOPENID = :p1";
+
+            return session
+                .CreateSQLQuery(sql)
+                .SetParameter("p1", openid)
+                .List<dynamic>().Count;
+        }
+        
 
         public string bbb()
         {

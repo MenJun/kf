@@ -28,6 +28,8 @@ using SZY.Common.Plugin.Tencent;
 using Unity.Attributes;
 using System.DrawingCore;
 using NReco.VideoConverter;
+using System.Diagnostics;
+using System.Data.SqlClient;
 
 namespace Api.Services.V1
 {
@@ -1574,10 +1576,23 @@ namespace Api.Services.V1
             }
             return await Task.FromResult(vos);
         }
-        public void ZXKH_Message_top(string xcxopenid, string xcxopenid_top)
+        public int ZXKH_Message_top(string xcxopenid, string xcxopenid_top)
         {
-            WxappDao.ZXKH_Message_top(xcxopenid, xcxopenid_top);
+            if (WxappDao.ZXKH_Message_Selecttop(xcxopenid, xcxopenid_top) == 0)
+            {
+                WxappDao.ZXKH_Message_top(xcxopenid, xcxopenid_top);
+                return 0;
+            }
+            else
+            {
+                return 1;
+            }
         }
+        public void ZXKH_Message_canceltop(string xcxopenid, string xcxopenid_top)
+        {
+            WxappDao.ZXKH_Message_canceltop(xcxopenid, xcxopenid_top);
+        }
+        
         public async Task<Response> ZXKH_QueryGroupMsg(string wxopenid, int page, int limit)
         {
             var result = WxappDao.ZXKH_QueryGroupMsg(wxopenid, page, limit);
@@ -1648,15 +1663,36 @@ namespace Api.Services.V1
 
         public async Task<Response> ZXKH_QueryCustomers(string fmobile)
         {
+            ZXKH_WriteTxt("数据库开始访问时间"+ DateTime.Now.Date.ToString());
             var result = WxappDao.ZXKH_QueryCustomers();
-
+            ZXKH_WriteTxt("数据库结束访问时间" + DateTime.Now.Date.ToString());
+            ZXKH_WriteTxt("循环开始访问时间" + DateTime.Now.Date.ToString());
             foreach (var item in result)
             {
-                var openid = (string)item["XCXOPENID"];
-                var count = RedisHelper.StringGet(openid);
-                item["count"] = count == "0" ? "" : count;
-                item["diffMinutes"] = DateTime.Now.Subtract(TimeStampHelper.FromTimeStamp((long)item["CreateTime"]).AddHours(-8)).TotalMinutes;
-
+                //var openid = (string)item["XCXOPENID"];
+                //var count = RedisHelper.StringGet(openid);
+                //item["count"] = count == "0" ? "" : count;
+                //item["diffMinutes"] = DateTime.Now.Subtract(TimeStampHelper.FromTimeStamp((long)item["CreateTime"]).AddHours(-8)).TotalMinutes;
+                if (item["KHNAME"] == null)
+                {
+                    var userName = WxappDao.ZXKH_GroupName(item["XCXOPENID"]);  //定义群组下面成员的名称
+                    for (int i = 0; i < userName.Count; i++)   //如果群组名称没有则用成员拼凑
+                    {
+                        if (i == 0)
+                        {
+                            item["KHNAME"] = userName[i];
+                        }
+                        else
+                        {
+                            item["KHNAME"] += "、" + userName[i];
+                            if (i > 1)
+                            {
+                                item["KHNAME"] += "...";
+                                break;
+                            }
+                        }
+                    }
+                }
                 var result1 = WxappDao.ZXKH_QueryMyCustomerFid(fmobile);
                 foreach (var item1 in result1)
                 {
@@ -1675,7 +1711,7 @@ namespace Api.Services.V1
                         }
                     }
             }
-
+            ZXKH_WriteTxt("循环结束访问时间" + DateTime.Now.Date.ToString());
             //result = result.Where(x => x["diffMinutes"] <= 48 * 60).ToList();
 
             return new Response
@@ -1729,14 +1765,29 @@ namespace Api.Services.V1
         
         public async Task<Response> ZXKH_QueryMyMessage(string fmobile)
         {
-            var results = WxappDao.ZXKH_QueryMyMessage(fmobile);
+            var watch = new Stopwatch();
+            watch.Start();
+            var results = WxappDao.ZXKH_QueryMyMessage(fmobile);  //拖慢慢
+            watch.Stop();
+           
+            ZXKH_WriteTxt("数据库访问结束时间" + watch.Elapsed.TotalSeconds);
 
+            watch.Reset();
+            watch.Start();
             foreach (var item in results)
             {
-                var openid = (string)item["XCXOPENID"];
-                var count = RedisHelper.StringGet(openid);
-                item["count"] = count == "0" ? "" : count;
-                item["diffMinutes"] = DateTime.Now.Subtract(TimeStampHelper.FromTimeStamp((long)item["CreateTime"]).AddHours(-8)).TotalMinutes;
+                //var openid = (string)item["XCXOPENID"];
+                //var count = RedisHelper.StringGet(openid);
+                //item["count"] = count == "0" ? "" : count;
+                //item["diffMinutes"] = DateTime.Now.Subtract(TimeStampHelper.FromTimeStamp((long)item["CreateTime"]).AddHours(-8)).TotalMinutes;
+                if (WxappDao.ZXKH_Message_seaktop(fmobile, item["XCXOPENID"]) > 0)
+                {
+                    item["top"] = "1";
+                }
+                else
+                {
+                    item["top"] = "0";
+                }
                 if (item["KHNAME"] == null)
                 {
                     var userName = WxappDao.ZXKH_GroupName(item["XCXOPENID"]);  //定义群组下面成员的名称
@@ -1775,7 +1826,8 @@ namespace Api.Services.V1
                     }
                 }
             }
-
+            watch.Stop();
+            ZXKH_WriteTxt("循环访问结束时间" +watch.Elapsed.TotalSeconds);
             return new Response
             {
                 Result = results
@@ -3191,6 +3243,12 @@ namespace Api.Services.V1
                 Result = data
             };
         }
+        public int ZXKH_gzhpath(string openid)
+        {
+            return WxappDao.ZXKH_gzhpath(openid);
+        }
+
+
         public string ZXKH_WxgzhAuth(string url) {
 
             //string timestamp1 = timestamp();
@@ -3274,6 +3332,9 @@ namespace Api.Services.V1
             return System.Web.Security.FormsAuthentication.HashPasswordForStoringInConfigFile(string1, "SHA1");
         }
         #endregion
+        
+        
+
         public string bbb()
         {
             return "以上新加";
@@ -3542,8 +3603,8 @@ namespace Api.Services.V1
                             Directory.CreateDirectory(fullPath + "\\" + fileExtension.Substring(1, fileExtension.Length - 1));
                         }
                         string fileMimeType = MimeMapping.GetMimeMapping(file.FileName);
-                        string[] fileTypeWhiteList = new string[] { ".txt", ".docx", ".pptx" };
-                        string[] fileMimeTypeWhiteList = new string[] { "text/plain"};
+                        string[] fileTypeWhiteList = new string[] { ".txt", ".xlsx", ".pptx", ".ppt", ".doc" , ".docx" };
+                        string[] fileMimeTypeWhiteList = new string[] { "text/plain", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/vnd.openxmlformats-officedocument.presentationml.presentation", "application/vnd.ms-powerpoint", "application/msword" , "application/vnd.openxmlformats-officedocument.wordprocessingml.document" };
                         if (!fileTypeWhiteList.Contains(fileExtension.ToLower()) || !fileMimeTypeWhiteList.Contains(fileMimeType))
                         {
                             throw new Exception($"文件{file.FileName}是不支持的文件类型！");
@@ -3574,9 +3635,10 @@ namespace Api.Services.V1
                             //ZXKH_SendImage(obj.ToUserName, mediaId);
                         }
                     }
+                    WxappDao.SaveCustomerMessage(obj);
                     return new Response
                     {
-                        Result = WxappDao.SaveCustomerMessage(obj)  //savePath
+                        Result = obj  //savePath
                     };
                 }
                 else

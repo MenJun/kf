@@ -27,7 +27,7 @@ namespace Api.Model.DO
         public virtual string XCXFromOpenId { get; set; }
         public virtual string XCXToOpenId { get; set; }
         public virtual string Event { get; set; } //+
-        public virtual string KHNAME { get; set; } //+
+        //public virtual string KHNAME { get; set; } //+
 
         public virtual object Image { get; set; }
     }
