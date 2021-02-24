@@ -689,6 +689,7 @@ namespace Api.Controllers.V1
         /// <returns></returns>
         [Route("zxkh_mymessage")]
         [HttpGet]
+        [AllowAnonymous]
         [Transaction]
         public async Task<Response> ZXKH_QueryMyMessage(string fmobile)
         {
@@ -1603,7 +1604,7 @@ namespace Api.Controllers.V1
         }
 
         /// <summary>
-        /// 上传客服图片
+        /// 上传图片或者文件
         /// </summary>
         /// <returns></returns>
         [HttpPost]
@@ -1614,6 +1615,7 @@ namespace Api.Controllers.V1
         }
 
         [HttpGet]
+        [AllowAnonymous]
         [Route("pc_everyoneCustomers")]
         public async Task<Response> pc_everyoneCustomers([FromUri]string userId)
         {
@@ -1632,6 +1634,48 @@ namespace Api.Controllers.V1
         public Response kfRelation([FromUri]string id, [FromUri] string Fid)
         {
             return WxappService.kfRelation(id, Fid);
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        [Route("Management")]
+        public async Task<Response> Management ([FromUri]string userId)
+        {
+            return await WxappService.Management(userId);
+        }
+
+        /// <summary>
+        /// 添加为个人管理
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [AllowAnonymous]
+        [Transaction]
+        [Route("Addition/update")]
+        public Response permissions([FromUri]string khname, [FromUri]string fid, [FromUri]string fmobile, [FromUri]string xcxopenid,[FromUri]string ffid)
+        {
+            return new Response
+            {
+                Result = WxappService.permissions(khname, fid, fmobile, xcxopenid, ffid)
+            };
+        }
+
+        /// <summary>
+        /// 删除不活跃的用户
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [AllowAnonymous]
+        [Transaction]
+        [Route("DelSurplus")]
+        public Response DelSurplus([FromBody]long[] pers)
+        {
+            return new Response
+            {
+                Result = WxappService.DelSurplus(pers)
+            };
         }
     }
 }

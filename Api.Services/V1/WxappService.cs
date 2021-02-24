@@ -1578,6 +1578,9 @@ namespace Api.Services.V1
         {
             WxappDao.ZXKH_Message_top(xcxopenid, xcxopenid_top);
         }
+
+       
+
         public async Task<Response> ZXKH_QueryGroupMsg(string wxopenid, int page, int limit)
         {
             var result = WxappDao.ZXKH_QueryGroupMsg(wxopenid, page, limit);
@@ -1652,10 +1655,10 @@ namespace Api.Services.V1
 
             foreach (var item in result)
             {
-                var openid = (string)item["XCXOPENID"];
-                var count = RedisHelper.StringGet(openid);
-                item["count"] = count == "0" ? "" : count;
-                item["diffMinutes"] = DateTime.Now.Subtract(TimeStampHelper.FromTimeStamp((long)item["CreateTime"]).AddHours(-8)).TotalMinutes;
+                //var openid = (string)item["XCXOPENID"];
+                //var count = RedisHelper.StringGet(openid);
+                //item["count"] = count == "0" ? "" : count;
+                //item["diffMinutes"] = DateTime.Now.Subtract(TimeStampHelper.FromTimeStamp((long)item["CreateTime"]).AddHours(-8)).TotalMinutes;
 
                 var result1 = WxappDao.ZXKH_QueryMyCustomerFid(fmobile);
                 foreach (var item1 in result1)
@@ -3284,22 +3287,29 @@ namespace Api.Services.V1
         /// <returns></returns>
         public async Task<Response> pc_QueryCustomers()
         {
-            var result = WxappDao.pc_QueryCustomers();
 
-            foreach (var item in result)
+            if (-1  == -1)
             {
-                var openid = (string)item["XCXOPENID"];
-                var count = RedisHelper.StringGet(openid);
-                item["count"] = count == "0" ? "" : count;
-                item["diffMinutes"] = DateTime.Now.Subtract(TimeStampHelper.FromTimeStamp((long)item["createtime"]).AddHours(-8)).TotalMinutes;
+                var result = WxappDao.pc_QueryCustomers();
+
+                foreach (var item in result)
+                {
+                    var openid = (string)item["XCXOPENID"];
+                    var count = RedisHelper.StringGet(openid);
+                    item["count"] = count == "0" ? "" : count;
+                    item["diffMinutes"] = DateTime.Now.Subtract(TimeStampHelper.FromTimeStamp((long)item["createtime"]).AddHours(-8)).TotalMinutes;
+                }
+                //result = result.Where(x => x["diffMinutes"] <= 48 * 60).ToList();
+                return new Response
+                {
+                    Result = result
+                };
             }
-
-            //result = result.Where(x => x["diffMinutes"] <= 48 * 60).ToList();
-
-            return new Response
+            else
             {
-                Result = result
-            };
+                
+            }
+            
         }
         public async Task<Response> pc_ZXKH_ALLGroupList()
         {
@@ -3542,8 +3552,8 @@ namespace Api.Services.V1
                             Directory.CreateDirectory(fullPath + "\\" + fileExtension.Substring(1, fileExtension.Length - 1));
                         }
                         string fileMimeType = MimeMapping.GetMimeMapping(file.FileName);
-                        string[] fileTypeWhiteList = new string[] { ".txt", ".docx", ".pptx" };
-                        string[] fileMimeTypeWhiteList = new string[] { "text/plain"};
+                        string[] fileTypeWhiteList = new string[] { ".txt", ".docx", ".pptx",".xlsx",".doc",".ppt", ".pptx" };
+                        string[] fileMimeTypeWhiteList = new string[] { "text/plain", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/msword", "application/vnd.openxmlformats-officedocument.presentationml.presentation", "application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.wordprocessingml.document" };
                         if (!fileTypeWhiteList.Contains(fileExtension.ToLower()) || !fileMimeTypeWhiteList.Contains(fileMimeType))
                         {
                             throw new Exception($"文件{file.FileName}是不支持的文件类型！");
@@ -3570,7 +3580,7 @@ namespace Api.Services.V1
                             //    media_id = mediaId
                             //};
                             obj.Content = savePath;
-
+                            obj.MsgType = "file";
                             //ZXKH_SendImage(obj.ToUserName, mediaId);
                         }
                     }
@@ -3660,7 +3670,56 @@ namespace Api.Services.V1
             }
             else
             {
-                return await ZXKH_QueryCustomers(WxappDao.GetTel(userId)); 
+                //ZXKH_QueryCustomers(WxappDao.GetTel(userId));
+                var results = WxappDao.pc_ZXKH_QueryCustomers(userId);
+                foreach (var item in results)
+                {
+                    var openid = (string)item["XCXOPENID"];
+                    var count = RedisHelper.StringGet(openid);
+                    item["count"] = count == "0" ? "" : count;
+                    item["diffMinutes"] = DateTime.Now.Subtract(TimeStampHelper.FromTimeStamp((long)item["CreateTime"]).AddHours(-8)).TotalMinutes;
+                    if (item["KHNAME"] == null)
+                    {
+                        var userName = WxappDao.ZXKH_GroupName(item["XCXOPENID"]);  //定义群组下面成员的名称
+                        for (int i = 0; i < userName.Count; i++)   //如果群组名称没有则用成员拼凑
+                        {
+                            if (i == 0)
+                            {
+                                item["KHNAME"] = userName[i];
+                            }
+                            else
+                            {
+                                item["KHNAME"] += "、" + userName[i];
+                                if (i > 1)
+                                {
+                                    item["KHNAME"] += "...";
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    var result = WxappDao.pc_ZXKH_QueryMyCustomerFid(item["FID"]);
+                    foreach (var item1 in result)
+                    {
+                        if (item1["CustomerID"] == item["FID"])
+                        {
+                            item["identity"] = "客户";
+                        }
+                    }
+
+                    var staff = WxappDao.pc_ZXKH_QueryMyStaffFid(item["FID"]);
+                    foreach (var item2 in staff)
+                    {
+                        if (item2["StaffID"] == item["FID"])
+                        {
+                            item["identity"] = "客服";
+                        }
+                    }
+                }
+                return new Response
+                {
+                    Result = results
+                };
             }
             
         }
@@ -3678,6 +3737,66 @@ namespace Api.Services.V1
             return new Response
             {
                  Result = 1
+            };
+        }
+
+        public async Task<Response> Management(string id)
+        {
+            var results = WxappDao.Management(id);
+
+            IList<Managements> listTestinfo = new List<Managements>();
+
+            foreach (var item in results)
+            {
+
+                Managements testinfo = new Managements();
+                testinfo.khname = item["KHNAME"];
+                testinfo.fmobile = item["FMOBILE"];
+                testinfo.fid = item["FID"];
+                testinfo.zfid = item["zfid"];
+                testinfo.xcxopenid = item["XCXOPENID"];
+                testinfo.fwxopenid = item["FWXOPENID"];
+
+
+                var result = WxappDao.Managements(item["FMOBILE"]);
+                List<sonXMText> listSonText = new List<sonXMText>();
+                foreach (var itemS in result)
+                {
+                    sonXMText sontext1 = new sonXMText();
+                    sontext1.khname = itemS["KHNAME"];
+                    sontext1.fmobile = itemS["FMOBILE"];
+                    sontext1.fid = itemS["FID"];
+                    sontext1.ffid = testinfo.fid;
+                    sontext1.PICTURE = itemS["PICTURE"];
+                    sontext1.xcxopenid = itemS["XCXOPENID"];
+                    sontext1.fwxopenid = itemS["FWXOPENID"];
+                    listSonText.Add(sontext1);
+                }
+
+                testinfo.sonXMText = listSonText;
+                listTestinfo.Add(testinfo);
+            }
+            return new Response
+            {
+                Result = listTestinfo
+            };
+        }
+
+        public Response permissions(string khname, string fid, string fmobile, string xcxopenid, string ffid)
+        {
+            WxappDao.permissions(khname, fid, fmobile, xcxopenid,ffid);
+            return new Response
+            {
+                Result = 1
+            };
+        }
+
+        public Response DelSurplus(long[] pers)
+        {
+            WxappDao.permissions(pers);
+            return new Response
+            {
+                Result = 1
             };
         }
     }

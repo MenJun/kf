@@ -70,7 +70,9 @@
     <Compile Include="BO\A3UseRebate.cs" />
     <Compile Include="BO\CommonBO.cs" />
     <Compile Include="BO\JwtPayload.cs" />
+    <Compile Include="BO\Managements.cs" />
     <Compile Include="BO\SaleOrderExportExcelBO.cs" />
+    <Compile Include="BO\sonXMText.cs" />
     <Compile Include="BO\WxPayloadBO.cs" />
     <Compile Include="BO\WxSendMessage.cs" />
     <Compile Include="BO\WxUniqOrderBO.cs" />

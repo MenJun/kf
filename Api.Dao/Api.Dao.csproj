@@ -80,6 +80,10 @@
       <Project>{BF535EA8-8830-4EE7-A819-20B7B86D06CA}</Project>
       <Name>Api.Model</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Common.Authority\Common.Authority.csproj">
+      <Project>{5C3EE442-FE3D-478F-9042-C90E93FA44FD}</Project>
+      <Name>Common.Authority</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Common.Utils\Common.Util.csproj">
       <Project>{DA96C5C1-F59B-4751-899D-013B575B512D}</Project>
       <Name>Common.Util</Name>
