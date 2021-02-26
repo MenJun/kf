@@ -691,7 +691,6 @@ namespace Api.Controllers.V1
         [HttpGet]
         [AllowAnonymous]
         [Transaction]
-        [AllowAnonymous]
         public async Task<Response> ZXKH_QueryMyMessage(string fmobile)
         {
             var results = await WxappService.ZXKH_QueryMyMessage(fmobile);
@@ -1524,16 +1523,16 @@ namespace Api.Controllers.V1
         
 
         /// <summary>
-        /// pc用户列表
+        /// pc 我的用户消息列表
         /// </summary>
         /// <returns></returns>
         [Route("pc_customers")]
         [HttpGet]
         [Transaction]
         [AllowAnonymous]
-        public async Task<Response> pc_QueryCustomers()
+        public async Task<Response> pc_QueryCustomers([FromUri] string xcxopenid)
         {
-            var result = await WxappService.pc_QueryCustomers();
+            var result = await WxappService.pc_QueryCustomers(xcxopenid);
 
             return result;
         }
@@ -1657,12 +1656,23 @@ namespace Api.Controllers.V1
             return await WxappService.pc_everyoneCustomers(userId);
         }
 
+        /// <summary>
+        /// 监听显示--查询客服
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("pc_kfSelect")]
-        public Response pc_kfSelect([FromUri]string id)
+        public async Task<Response> pc_kfSelect([FromUri]string id)
         {
-            return WxappService.pc_GetKfSelect(id);
+            return await WxappService.pc_GetKfSelect(id);
         }
+        /// <summary>
+        /// 监听显示 --添加
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="Fid"></param>
+        /// <returns></returns>
         [HttpGet]
         [AllowAnonymous]
         [Route("pc_kfRelation")]
@@ -1674,9 +1684,9 @@ namespace Api.Controllers.V1
         [HttpGet]
         [AllowAnonymous]
         [Route("Management")]
-        public async Task<Response> Management ([FromUri]string userId)
+        public IHttpActionResult Management ([FromUri]string userId)
         {
-            return await WxappService.Management(userId);
+            return Ok(WxappService.Management(userId));
         }
 
         /// <summary>
@@ -1688,11 +1698,11 @@ namespace Api.Controllers.V1
         [AllowAnonymous]
         [Transaction]
         [Route("Addition/update")]
-        public Response permissions([FromUri]string khname, [FromUri]string fid, [FromUri]string fmobile, [FromUri]string xcxopenid,[FromUri]string ffid)
+        public Response permissions([FromUri]string khname, [FromUri]string fid, [FromUri]string fmobile, [FromUri]string xcxopenid,[FromUri]string ffid, [FromUri]string userId)
         {
             return new Response
             {
-                Result = WxappService.permissions(khname, fid, fmobile, xcxopenid, ffid)
+                Result = WxappService.permissions(khname, fid, fmobile, xcxopenid, ffid, userId)
             };
         }
 
@@ -1705,11 +1715,11 @@ namespace Api.Controllers.V1
         [AllowAnonymous]
         [Transaction]
         [Route("DelSurplus")]
-        public Response DelSurplus([FromBody]long[] pers)
+        public Response DelSurplus([FromBody]long[] pers,[FromUri]string userId)
         {
             return new Response
             {
-                Result = WxappService.DelSurplus(pers)
+                Result = WxappService.DelSurplus(pers,userId)
             };
         }
     }

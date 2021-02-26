@@ -2183,40 +2183,80 @@ GROUP BY derivedtbl_1.FNAME, derivedtbl_1.FWXOPENID, derivedtbl_1.Expr2, derived
         }
 
         /// <summary>
-        /// pc用户列表
+        /// pc我的列表
         /// </summary>
         /// <returns></returns>
-        public IList<dynamic> pc_QueryCustomers()
+        public IList<dynamic> pc_QueryCustomers(string XCXOpenId)
         {
             ISession session = NHSessionProvider.GetCurrentSession();
-            var sql = @"select * from (
-                SELECT  ROW_NUMBER()   
-                over   
-                (PARTITION By T_ESS_CHANNELSTAFF_1.FID order by dbo.T_CUS_SERVER_MSG.CreateTime DESC) as rowId, T_ESS_CHANNELSTAFF_1.FID, T_ESS_CHANNELSTAFF_1.KHNAME, dbo.T_ESS_CHANNELSTAFF_AVATAR.PICTURE, 
-                T_ESS_CHANNELSTAFF_1.XCXOPENID, T_ESS_CHANNELSTAFF_1.FWXOPENID, 
-                dbo.T_CUS_SERVER_MSG.[Content] AS [content], dbo.T_CUS_SERVER_MSG.CreateTime as createtime
-                FROM      dbo.T_ESS_CHANNELSTAFF_AVATAR INNER JOIN
-                dbo.T_ESS_CHANNELSTAFF AS T_ESS_CHANNELSTAFF_1 ON 
-                dbo.T_ESS_CHANNELSTAFF_AVATAR.STAFFID = T_ESS_CHANNELSTAFF_1.FID INNER JOIN
-                dbo.T_ESS_CHANNELSTAFF INNER JOIN
-                dbo.T_ESS_CHANNELSTAFF_RelationShip ON 
-                dbo.T_ESS_CHANNELSTAFF.FID = dbo.T_ESS_CHANNELSTAFF_RelationShip.StaffID ON 
-                T_ESS_CHANNELSTAFF_1.FID = dbo.T_ESS_CHANNELSTAFF_RelationShip.CustomerID LEFT OUTER JOIN
-                dbo.T_CUS_SERVER_MSG ON 
-                T_ESS_CHANNELSTAFF_1.XCXOPENID = dbo.T_CUS_SERVER_MSG.XCXFromOpenId AND 
-                dbo.T_ESS_CHANNELSTAFF.XCXOPENID = dbo.T_CUS_SERVER_MSG.XCXToOpenId
-                WHERE   (dbo.T_ESS_CHANNELSTAFF.XCXOPENID in(SELECT   a.XCXOPENID
-FROM      dbo.T_ESS_CHANNELSTAFF AS a LEFT OUTER JOIN
-                dbo.T_ESS_CHANNELSTAFF_AVATAR AS b ON a.FID = b.STAFFID LEFT OUTER JOIN
-                dbo.T_ESS_CHANNELSTAFF_L AS c ON c.FID = a.FID LEFT OUTER JOIN
-                dbo.A_ROLE AS d ON d.FID = c.FROLEID
-WHERE   (d.FNAME = '客服')) )
-                GROUP BY T_ESS_CHANNELSTAFF_1.FID, T_ESS_CHANNELSTAFF_1.KHNAME, dbo.T_ESS_CHANNELSTAFF_AVATAR.PICTURE, 
-                T_ESS_CHANNELSTAFF_1.XCXOPENID, T_ESS_CHANNELSTAFF_1.FWXOPENID, dbo.T_CUS_SERVER_MSG.[Content], 
+            //            var sql = @"select * from (
+            //                SELECT  ROW_NUMBER()   
+            //                over   
+            //                (PARTITION By T_ESS_CHANNELSTAFF_1.FID order by dbo.T_CUS_SERVER_MSG.CreateTime DESC) as rowId, T_ESS_CHANNELSTAFF_1.FID, T_ESS_CHANNELSTAFF_1.KHNAME, dbo.T_ESS_CHANNELSTAFF_AVATAR.PICTURE, 
+            //                T_ESS_CHANNELSTAFF_1.XCXOPENID, T_ESS_CHANNELSTAFF_1.FWXOPENID, 
+            //                dbo.T_CUS_SERVER_MSG.[Content] AS [content], dbo.T_CUS_SERVER_MSG.CreateTime as createtime
+            //                FROM      dbo.T_ESS_CHANNELSTAFF_AVATAR INNER JOIN
+            //                dbo.T_ESS_CHANNELSTAFF AS T_ESS_CHANNELSTAFF_1 ON 
+            //                dbo.T_ESS_CHANNELSTAFF_AVATAR.STAFFID = T_ESS_CHANNELSTAFF_1.FID INNER JOIN
+            //                dbo.T_ESS_CHANNELSTAFF INNER JOIN
+            //                dbo.T_ESS_CHANNELSTAFF_RelationShip ON 
+            //                dbo.T_ESS_CHANNELSTAFF.FID = dbo.T_ESS_CHANNELSTAFF_RelationShip.StaffID ON 
+            //                T_ESS_CHANNELSTAFF_1.FID = dbo.T_ESS_CHANNELSTAFF_RelationShip.CustomerID LEFT OUTER JOIN
+            //                dbo.T_CUS_SERVER_MSG ON 
+            //                T_ESS_CHANNELSTAFF_1.XCXOPENID = dbo.T_CUS_SERVER_MSG.XCXFromOpenId AND 
+            //                dbo.T_ESS_CHANNELSTAFF.XCXOPENID = dbo.T_CUS_SERVER_MSG.XCXToOpenId
+            //                WHERE   (dbo.T_ESS_CHANNELSTAFF.XCXOPENID in(SELECT   a.XCXOPENID
+            //FROM      dbo.T_ESS_CHANNELSTAFF AS a LEFT OUTER JOIN
+            //                dbo.T_ESS_CHANNELSTAFF_AVATAR AS b ON a.FID = b.STAFFID LEFT OUTER JOIN
+            //                dbo.T_ESS_CHANNELSTAFF_L AS c ON c.FID = a.FID LEFT OUTER JOIN
+            //                dbo.A_ROLE AS d ON d.FID = c.FROLEID
+            //WHERE   (d.FNAME = '客服')) )
+            //                GROUP BY T_ESS_CHANNELSTAFF_1.FID, T_ESS_CHANNELSTAFF_1.KHNAME, dbo.T_ESS_CHANNELSTAFF_AVATAR.PICTURE, 
+            //                T_ESS_CHANNELSTAFF_1.XCXOPENID, T_ESS_CHANNELSTAFF_1.FWXOPENID, dbo.T_CUS_SERVER_MSG.[Content], 
+            //                dbo.T_CUS_SERVER_MSG.CreateTime
+            //                ) t
+            //                where rowid <= 1 and CreateTime <>''";
+
+            string sql = @"select * from  (select t.FID, t.KHNAME, t.PICTURE, 
+                t.FWXOPENID, t.XCXOPENID, 
+                t.[Content], t.CreateTime
+                  from (
+  SELECT  ROW_NUMBER() over (PARTITION By dbo.T_ESS_CHANNELSTAFF.XCXOPENID order by dbo.T_CUS_SERVER_MSG.CreateTime desc) as rowId,   dbo.T_ESS_CHANNELSTAFF.FID, dbo.T_ESS_CHANNELSTAFF.KHNAME, dbo.T_ESS_CHANNELSTAFF_AVATAR.PICTURE, 
+                dbo.T_ESS_CHANNELSTAFF.FWXOPENID, dbo.T_ESS_CHANNELSTAFF.XCXOPENID, 
+                dbo.T_CUS_SERVER_MSG.[Content], dbo.T_CUS_SERVER_MSG.CreateTime
+FROM      dbo.T_ESS_CHANNELSTAFF INNER JOIN
+                dbo.T_ESS_CHANNELSTAFF_AVATAR ON 
+                dbo.T_ESS_CHANNELSTAFF.FID = dbo.T_ESS_CHANNELSTAFF_AVATAR.STAFFID INNER JOIN
+                dbo.T_CUS_SERVER_MSG INNER JOIN
+                    (SELECT   TOP (200) XCXFromOpenId, XCXToOpenId
+                     FROM      dbo.T_CUS_SERVER_MSG AS T_CUS_SERVER_MSG_1
+                     GROUP BY MsgType, XCXFromOpenId, XCXToOpenId
+                     HAVING   (LEN(XCXToOpenId) = 28) AND (XCXFromOpenId = :p1)) 
+                AS derivedtbl_1 ON dbo.T_CUS_SERVER_MSG.XCXToOpenId = derivedtbl_1.XCXToOpenId AND 
+                dbo.T_CUS_SERVER_MSG.XCXFromOpenId = derivedtbl_1.XCXFromOpenId ON 
+                dbo.T_ESS_CHANNELSTAFF.XCXOPENID = dbo.T_CUS_SERVER_MSG.XCXToOpenId) as t where rowid <= 1
+union all
+ select a.FID, a.KHNAME, a.GroupImgBase64 as PICTURE, 
+                a.FWXOPENID, a.XCXToOpenId as XCXOPENID, 
+                a.[Content],a.CreateTime
+                  from (
+  SELECT  ROW_NUMBER() over (PARTITION By dbo.T_ESS_CHANNELSTAFF.XCXOPENID order by dbo.T_CUS_SERVER_MSG.CreateTime desc) as rowId,  dbo.T_ESS_CHANNELSTAFF.FID, dbo.T_ESS_CHANNELSTAFF_GROUP.GroupName AS KHNAME, 
+                dbo.T_ESS_CHANNELSTAFF_GROUP.GroupImgBase64, dbo.T_ESS_CHANNELSTAFF.FWXOPENID, 
+                dbo.T_CUS_SERVER_MSG.XCXToOpenId, dbo.T_CUS_SERVER_MSG.[Content], 
                 dbo.T_CUS_SERVER_MSG.CreateTime
-                ) t
-                where rowid <= 1 and CreateTime <>''";
+FROM      dbo.T_CUS_SERVER_MSG INNER JOIN
+                    (SELECT   TOP (200) XCXFromOpenId, XCXToOpenId
+                     FROM      dbo.T_CUS_SERVER_MSG AS T_CUS_SERVER_MSG_1
+                     GROUP BY MsgType, XCXFromOpenId, XCXToOpenId
+                     HAVING   (LEN(XCXToOpenId) > 28) AND (XCXFromOpenId = :p2)) 
+                AS derivedtbl_1 ON dbo.T_CUS_SERVER_MSG.XCXToOpenId = derivedtbl_1.XCXToOpenId AND 
+                dbo.T_CUS_SERVER_MSG.XCXFromOpenId = derivedtbl_1.XCXFromOpenId INNER JOIN
+                dbo.T_ESS_CHANNELSTAFF_GROUP ON 
+                dbo.T_CUS_SERVER_MSG.XCXToOpenId = dbo.T_ESS_CHANNELSTAFF_GROUP.GroupNo INNER JOIN
+                dbo.T_ESS_CHANNELSTAFF ON dbo.T_CUS_SERVER_MSG.XCXFromOpenId = dbo.T_ESS_CHANNELSTAFF.XCXOPENID) as a  where rowid <= 1 ) as t ORDER BY t.CreateTime DESC";
             return session.CreateSQLQuery(sql)
+                .SetParameter("p1", XCXOpenId)
+                .SetParameter("p2", XCXOpenId)
                 .SetResultTransformer(new AliasToEntityMapResultTransformer())
                 .List<dynamic>();
         }
@@ -2464,14 +2504,24 @@ WHERE   (dbo.T_ESS_CHANNELSTAFF.XCXOPENID = :p1)";
 
         public IList<dynamic> Management(string id)
         {
+            string Adminsql = "";
+            if (id != "-1")
+            {
+                Adminsql = "WHERE   (dbo.T_ESS_CHANNELSTAFF_KFgl.zfid = '" + id +"')";
+            }
             ISession session = NHSessionProvider.GetCurrentSession();
-                string sql = @"SELECT     dbo.T_ESS_CHANNELSTAFF.FID, dbo.T_ESS_CHANNELSTAFF.FWXOPENID, dbo.T_ESS_CHANNELSTAFF.XCXOPENID, dbo.T_ESS_CHANNELSTAFF.FMOBILE, dbo.T_ESS_CHANNELSTAFF.KHNAME, 
-                      dbo.T_ESS_CHANNELSTAFF_KFgl.zfid
-FROM         dbo.T_ESS_CHANNELSTAFF_KFgl INNER JOIN
-                      dbo.T_ESS_CHANNELSTAFF ON dbo.T_ESS_CHANNELSTAFF_KFgl.ffid = dbo.T_ESS_CHANNELSTAFF.FID
-WHERE     (dbo.T_ESS_CHANNELSTAFF_KFgl.zfid = :p1)";
-              return session.CreateSQLQuery(sql)
-                .SetParameter("p1", id)
+            //                string sql = @"SELECT     dbo.T_ESS_CHANNELSTAFF.FID, dbo.T_ESS_CHANNELSTAFF.FWXOPENID, dbo.T_ESS_CHANNELSTAFF.XCXOPENID, dbo.T_ESS_CHANNELSTAFF.FMOBILE, dbo.T_ESS_CHANNELSTAFF.KHNAME, 
+            //                      dbo.T_ESS_CHANNELSTAFF_KFgl.zfid
+            //FROM         dbo.T_ESS_CHANNELSTAFF_KFgl INNER JOIN
+            //                      dbo.T_ESS_CHANNELSTAFF ON dbo.T_ESS_CHANNELSTAFF_KFgl.ffid = dbo.T_ESS_CHANNELSTAFF.FID " + Adminsql;
+            string sql = @"SELECT   dbo.T_ESS_CHANNELSTAFF.FID, dbo.T_ESS_CHANNELSTAFF.XCXOPENID, dbo.T_ESS_CHANNELSTAFF.FMOBILE, 
+                dbo.T_ESS_CHANNELSTAFF.KHNAME
+FROM      dbo.T_ESS_CHANNELSTAFF_KFgl INNER JOIN
+                dbo.T_ESS_CHANNELSTAFF ON dbo.T_ESS_CHANNELSTAFF_KFgl.ffid = dbo.T_ESS_CHANNELSTAFF.FID
+" + Adminsql + @"
+GROUP BY dbo.T_ESS_CHANNELSTAFF.FID, dbo.T_ESS_CHANNELSTAFF.XCXOPENID, dbo.T_ESS_CHANNELSTAFF.FMOBILE, 
+                dbo.T_ESS_CHANNELSTAFF.KHNAME";
+            return session.CreateSQLQuery(sql)
                 .SetResultTransformer(new AliasToEntityMapResultTransformer())
                 .List<dynamic>();
         }
@@ -2497,7 +2547,7 @@ FROM      dbo.T_ESS_CHANNELSTAFF INNER JOIN
               .List<dynamic>();
         }
 
-        public void permissions(string khname, string fid, string fmobile, string xcxopenid, string ffid)
+        public void permissions(string khname, string fid, string fmobile, string xcxopenid, string ffid, string userId)
         {
             ISession session = NHSessionProvider.GetCurrentSession();
             string sql = @"INSERT INTO [dbo].[T_ESS_CHANNELSTAFF_Personnel]
@@ -2505,8 +2555,8 @@ FROM      dbo.T_ESS_CHANNELSTAFF INNER JOIN
            ,[fid]
            ,[fmobile]
            ,[xcxopenid]
-            ,[ffid])
-            VALUES (:p1, :p2, :p3, :p4, :p5)";
+            ,[ffid],[userId])
+            VALUES (:p1, :p2, :p3, :p4, :p5, :p6)";
             session
                  .CreateSQLQuery(sql)
                  .SetParameter("p1", khname)
@@ -2514,105 +2564,117 @@ FROM      dbo.T_ESS_CHANNELSTAFF INNER JOIN
                  .SetParameter("p3", fmobile) 
                  .SetParameter("p4", xcxopenid)
                  .SetParameter("p5", ffid)
+                 .SetParameter("p6", userId)
                  .ExecuteUpdate();
         }
 
         public IList<dynamic> pc_ZXKH_QueryCustomers(string userId)
         {
+            string sql1 = "";
+            if (userId == "-1")
+            {
+                sql1 = "SELECT khname, fid, fmobile, xcxopenid, ffid FROM dbo.T_ESS_CHANNELSTAFF_Personnel WHERE(ffid = -1)";
+            }
+            else
+            {
+                sql1 = @"SELECT   dbo.T_ESS_CHANNELSTAFF_Personnel.khname, dbo.T_ESS_CHANNELSTAFF_Personnel.fid, 
+                                                          dbo.T_ESS_CHANNELSTAFF_Personnel.fmobile, 
+                                                          dbo.T_ESS_CHANNELSTAFF_Personnel.xcxopenid, 
+                                                          dbo.T_ESS_CHANNELSTAFF_Personnel.ffid
+                                          FROM      dbo.T_ESS_CHANNELSTAFF_Personnel INNER JOIN
+                                                              (SELECT   dbo.T_ESS_CHANNELSTAFF.FID, dbo.T_ESS_CHANNELSTAFF.FWXOPENID, 
+                                                                               dbo.T_ESS_CHANNELSTAFF.XCXOPENID, dbo.T_ESS_CHANNELSTAFF.FMOBILE, 
+                                                                               dbo.T_ESS_CHANNELSTAFF.KHNAME, 
+                                                                               dbo.T_ESS_CHANNELSTAFF_KFgl.zfid
+                                                               FROM      dbo.T_ESS_CHANNELSTAFF_KFgl INNER JOIN
+                                                                               dbo.T_ESS_CHANNELSTAFF ON 
+                                                                               dbo.T_ESS_CHANNELSTAFF_KFgl.ffid = dbo.T_ESS_CHANNELSTAFF.FID
+                                                               WHERE   (dbo.T_ESS_CHANNELSTAFF_KFgl.zfid = '"+userId+ @"')) AS derivedtbl_1_1 ON 
+                                                          dbo.T_ESS_CHANNELSTAFF_Personnel.ffid = derivedtbl_1_1.FID where userId ='" + userId + "'";
+            }
+
             ISession session = NHSessionProvider.GetCurrentSession();
-            string sql = @" select * from (select t.fid as FID,t.khname as KHNAME,t.PICTURE,t.XCXFromOpenId as XCXOPENID, 
-                t.XCXToOpenId as FWXOPENID, t.[Content],t.CreateTime
-                  from (
-SELECT  ROW_NUMBER()   
-        over   
-        (PARTITION By derivedtbl_1.xcxopenid order by dbo.T_CUS_SERVER_MSG.CreateTime desc) as rowId,dbo.T_CUS_SERVER_MSG.CreateTime, dbo.T_CUS_SERVER_MSG.MsgType, dbo.T_CUS_SERVER_MSG.[Content], 
+            string sql = @" SELECT *
+FROM   (SELECT t.fid           AS FID,
+               t.khname        AS KHNAME,
+               t.PICTURE,
+               t.XCXOPENID,
+               t.FWXOPENID,
+               t.[Content],
+               t.CreateTime
+        FROM   (SELECT Row_number()
+                         OVER (
+                           PARTITION BY derivedtbl_1.xcxopenid
+                           ORDER BY dbo.T_CUS_SERVER_MSG.CreateTime DESC) AS rowId,
+                     dbo.T_CUS_SERVER_MSG.CreateTime, dbo.T_CUS_SERVER_MSG.MsgType, dbo.T_CUS_SERVER_MSG.[Content], 
                 dbo.T_CUS_SERVER_MSG.PicUrl, dbo.T_CUS_SERVER_MSG.XCXFromOpenId, 
                 dbo.T_CUS_SERVER_MSG.XCXToOpenId, derivedtbl_1.fmobile, derivedtbl_1.ffid, 
-                dbo.T_ESS_CHANNELSTAFF_AVATAR.PICTURE, derivedtbl_1.khname, derivedtbl_1.fid
+                dbo.T_ESS_CHANNELSTAFF_AVATAR.PICTURE, derivedtbl_1.khname, derivedtbl_1.fid, 
+                T_ESS_CHANNELSTAFF_1.FWXOPENID, T_ESS_CHANNELSTAFF_1.XCXOPENID
 FROM      dbo.T_CUS_SERVER_MSG INNER JOIN
-                    (SELECT   dbo.T_ESS_CHANNELSTAFF_Personnel.khname, dbo.T_ESS_CHANNELSTAFF_Personnel.fid, 
-                                     dbo.T_ESS_CHANNELSTAFF_Personnel.fmobile, dbo.T_ESS_CHANNELSTAFF_Personnel.xcxopenid, 
-                                     dbo.T_ESS_CHANNELSTAFF_Personnel.ffid
-                     FROM      dbo.T_ESS_CHANNELSTAFF_Personnel INNER JOIN
-                                         (SELECT   dbo.T_ESS_CHANNELSTAFF.FID, dbo.T_ESS_CHANNELSTAFF.FWXOPENID, 
-                                                          dbo.T_ESS_CHANNELSTAFF.XCXOPENID, dbo.T_ESS_CHANNELSTAFF.FMOBILE, 
-                                                          dbo.T_ESS_CHANNELSTAFF.KHNAME, dbo.T_ESS_CHANNELSTAFF_KFgl.zfid
-                                          FROM      dbo.T_ESS_CHANNELSTAFF_KFgl INNER JOIN
-                                                          dbo.T_ESS_CHANNELSTAFF ON 
-                                                          dbo.T_ESS_CHANNELSTAFF_KFgl.ffid = dbo.T_ESS_CHANNELSTAFF.FID
-                                          WHERE   (dbo.T_ESS_CHANNELSTAFF_KFgl.zfid = :p1 )) AS derivedtbl_1_1 ON 
-                                     dbo.T_ESS_CHANNELSTAFF_Personnel.ffid = derivedtbl_1_1.FID) AS derivedtbl_1 ON 
+                    ("+sql1+@") AS derivedtbl_1 ON 
                 dbo.T_CUS_SERVER_MSG.XCXFromOpenId = derivedtbl_1.xcxopenid INNER JOIN
-                dbo.T_ESS_CHANNELSTAFF_AVATAR ON derivedtbl_1.fid = dbo.T_ESS_CHANNELSTAFF_AVATAR.STAFFID where LEN(dbo.T_CUS_SERVER_MSG.XCXToOpenId) =28
-
-) t
-where rowid <= 1
-                       union
-                SELECT   derivedtbl_1.FID, derivedtbl_1.GroupName AS KHNAME, derivedtbl_1.GroupImgBase64 AS PICTURE, 
-                derivedtbl_1.GroupNo AS XCXOPENID, derivedtbl_1.GroupNo AS FWXOPENID, derivedtbl_2.[Content], 
-                derivedtbl_2.CreateTime
-                FROM      (SELECT   TOP (100) PERCENT dbo.T_ESS_CHANNELSTAFF.FID, dbo.T_ESS_CHANNELSTAFF.KHNAME, 
-                                 dbo.T_ESS_CHANNELSTAFF.XCXOPENID, dbo.T_ESS_CHANNELSTAFF_GROUP.GroupNo, 
-                                 dbo.T_ESS_CHANNELSTAFF_GROUP.GroupName, dbo.T_ESS_CHANNELSTAFF_GROUP.GroupImgBase64, 
-                                 dbo.T_ESS_CHANNELSTAFF_GROUP.createtime, dbo.T_ESS_CHANNELSTAFF_GROUP.GroupState
-                 FROM      dbo.T_ESS_CHANNELSTAFF INNER JOIN
-                                 dbo.T_ESS_CHANNELSTAFF_GROUPSHIP ON 
-                                 dbo.T_ESS_CHANNELSTAFF.FID = dbo.T_ESS_CHANNELSTAFF_GROUPSHIP.UserFID INNER JOIN
-                                 dbo.T_ESS_CHANNELSTAFF_GROUP ON 
-                                 dbo.T_ESS_CHANNELSTAFF_GROUPSHIP.GroupNo = dbo.T_ESS_CHANNELSTAFF_GROUP.GroupNo
-                 WHERE   (dbo.T_ESS_CHANNELSTAFF.FMOBILE in (				SELECT    
-                dbo.T_ESS_CHANNELSTAFF_Personnel.fmobile
-FROM      dbo.T_ESS_CHANNELSTAFF_Personnel INNER JOIN
-                    (SELECT   dbo.T_ESS_CHANNELSTAFF.FID, dbo.T_ESS_CHANNELSTAFF.FWXOPENID, 
-                                     dbo.T_ESS_CHANNELSTAFF.XCXOPENID, dbo.T_ESS_CHANNELSTAFF.FMOBILE, 
-                                     dbo.T_ESS_CHANNELSTAFF.KHNAME, dbo.T_ESS_CHANNELSTAFF_KFgl.zfid
-                     FROM      dbo.T_ESS_CHANNELSTAFF_KFgl INNER JOIN
-                                     dbo.T_ESS_CHANNELSTAFF ON 
-                                     dbo.T_ESS_CHANNELSTAFF_KFgl.ffid = dbo.T_ESS_CHANNELSTAFF.FID
-                     WHERE   (dbo.T_ESS_CHANNELSTAFF_KFgl.zfid = :p2)) AS derivedtbl_1 ON 
-                dbo.T_ESS_CHANNELSTAFF_Personnel.ffid = derivedtbl_1.FID)) AND 
-                                 (dbo.T_ESS_CHANNELSTAFF_GROUP.GroupState = N'正常')) AS derivedtbl_1 INNER JOIN
-                    (SELECT   dbo.T_CUS_SERVER_MSG.[Content], dbo.T_CUS_SERVER_MSG.CreateTime, 
-                                     dbo.T_CUS_SERVER_MSG.XCXToOpenId
-                     FROM      dbo.T_CUS_SERVER_MSG INNER JOIN
-                                         (SELECT   XCXToOpenId, MAX(Id) AS Id
-                                          FROM      dbo.T_CUS_SERVER_MSG AS T_CUS_SERVER_MSG_1
-                                          GROUP BY XCXToOpenId
-                                          HAVING   ({ fn LENGTH(XCXToOpenId) } > '28')) AS grouplist ON 
-                                     dbo.T_CUS_SERVER_MSG.Id = grouplist.Id) AS derivedtbl_2 ON 
-                derivedtbl_1.GroupNo = derivedtbl_2.XCXToOpenId ) as t where t.FID in (				SELECT   dbo.T_ESS_CHANNELSTAFF_Personnel.fid
-FROM      dbo.T_ESS_CHANNELSTAFF_Personnel INNER JOIN
-                    (SELECT   dbo.T_ESS_CHANNELSTAFF.FID, dbo.T_ESS_CHANNELSTAFF.FWXOPENID, 
-                                     dbo.T_ESS_CHANNELSTAFF.XCXOPENID, dbo.T_ESS_CHANNELSTAFF.FMOBILE, 
-                                     dbo.T_ESS_CHANNELSTAFF.KHNAME, dbo.T_ESS_CHANNELSTAFF_KFgl.zfid
-                     FROM      dbo.T_ESS_CHANNELSTAFF_KFgl INNER JOIN
-                                     dbo.T_ESS_CHANNELSTAFF ON 
-                                     dbo.T_ESS_CHANNELSTAFF_KFgl.ffid = dbo.T_ESS_CHANNELSTAFF.FID
-                     WHERE   (dbo.T_ESS_CHANNELSTAFF_KFgl.zfid = :p3)) AS derivedtbl_1 ON 
-                dbo.T_ESS_CHANNELSTAFF_Personnel.ffid = derivedtbl_1.FID)
-            ORDER BY t.CreateTime DESC ";
+                dbo.T_ESS_CHANNELSTAFF_AVATAR ON derivedtbl_1.fid = dbo.T_ESS_CHANNELSTAFF_AVATAR.STAFFID INNER JOIN
+                dbo.T_ESS_CHANNELSTAFF AS T_ESS_CHANNELSTAFF_1 ON derivedtbl_1.fid = T_ESS_CHANNELSTAFF_1.FID
+WHERE   (LEN(dbo.T_CUS_SERVER_MSG.XCXToOpenId) = 28)) t
+        WHERE  rowid <= 1
+        UNION
+			 select a.FID, a.GroupName as KHNAME, a.GroupImgBase64 as PICTURE, 
+                 a.XCXToOpenId as XCXOPENID, a.FWXOPENID,
+                a.[Content],a.CreateTime
+                  from (
+  SELECT  ROW_NUMBER() over (PARTITION By  dbo.T_CUS_SERVER_MSG.XCXToOpenId order by dbo.T_CUS_SERVER_MSG.CreateTime desc) as rowId,dbo.T_CUS_SERVER_MSG.MsgType, dbo.T_CUS_SERVER_MSG.[Content], dbo.T_CUS_SERVER_MSG.PicUrl, 
+                dbo.T_CUS_SERVER_MSG.XCXToOpenId, dbo.T_CUS_SERVER_MSG.CreateTime, 
+                dbo.T_ESS_CHANNELSTAFF_AVATAR.PICTURE, T_ESS_CHANNELSTAFF_1.XCXOPENID, 
+                T_ESS_CHANNELSTAFF_1.KHNAME, T_ESS_CHANNELSTAFF_1.FWXOPENID, T_ESS_CHANNELSTAFF_1.FID, 
+                dbo.T_ESS_CHANNELSTAFF_GROUP.GroupImgBase64, dbo.T_ESS_CHANNELSTAFF_GROUP.GroupName, 
+                dbo.T_ESS_CHANNELSTAFF_GROUP.GroupState
+FROM      dbo.T_ESS_CHANNELSTAFF AS T_ESS_CHANNELSTAFF_1 INNER JOIN
+                dbo.T_ESS_CHANNELSTAFF_AVATAR ON 
+                T_ESS_CHANNELSTAFF_1.FID = dbo.T_ESS_CHANNELSTAFF_AVATAR.STAFFID INNER JOIN
+                dbo.T_CUS_SERVER_MSG INNER JOIN
+                    (SELECT   dbo.T_ESS_CHANNELSTAFF_GROUPSHIP.GroupNo
+                     FROM      dbo.T_ESS_CHANNELSTAFF_GROUPSHIP INNER JOIN
+                                         ("+sql1+@") AS derivedtbl_1_2 ON 
+                                     dbo.T_ESS_CHANNELSTAFF_GROUPSHIP.UserFID = derivedtbl_1_2.fid) AS derivedtbl_1 ON 
+                dbo.T_CUS_SERVER_MSG.XCXToOpenId = derivedtbl_1.GroupNo ON 
+                T_ESS_CHANNELSTAFF_1.XCXOPENID = dbo.T_CUS_SERVER_MSG.XCXFromOpenId INNER JOIN
+                dbo.T_ESS_CHANNELSTAFF_GROUP ON derivedtbl_1.GroupNo = dbo.T_ESS_CHANNELSTAFF_GROUP.GroupNo
+GROUP BY dbo.T_CUS_SERVER_MSG.MsgType, dbo.T_CUS_SERVER_MSG.[Content], dbo.T_CUS_SERVER_MSG.PicUrl, 
+                dbo.T_CUS_SERVER_MSG.XCXToOpenId, dbo.T_CUS_SERVER_MSG.CreateTime, 
+                dbo.T_ESS_CHANNELSTAFF_AVATAR.PICTURE, T_ESS_CHANNELSTAFF_1.XCXOPENID, 
+                T_ESS_CHANNELSTAFF_1.KHNAME, T_ESS_CHANNELSTAFF_1.FWXOPENID, T_ESS_CHANNELSTAFF_1.FID, 
+                dbo.T_ESS_CHANNELSTAFF_GROUP.GroupImgBase64, dbo.T_ESS_CHANNELSTAFF_GROUP.GroupName, 
+                dbo.T_ESS_CHANNELSTAFF_GROUP.GroupState
+HAVING   (dbo.T_ESS_CHANNELSTAFF_GROUP.GroupState = N'正常')) as a  where rowid <= 1) as t";
             return session.CreateSQLQuery(sql)
-           .SetParameter("p1", userId)
-           .SetParameter("p2", userId)
-           .SetParameter("p3", userId)
           .SetResultTransformer(new AliasToEntityMapResultTransformer())
           .List<dynamic>();
         }
 
         /// <summary>
-        /// 查找出自己所有的客户fid
+        /// 查看是客服还是客户
         /// </summary>
         /// <returns></returns>
-        public IList<dynamic> pc_ZXKH_QueryMyCustomerFid(long fmobile)
+        public IList<dynamic> pc_ZXKH_QueryMyCustomerFid(long FID)
         {
             ISession session = NHSessionProvider.GetCurrentSession();
-            string sql = @"SELECT   dbo.T_ESS_CHANNELSTAFF.FMOBILE, dbo.T_ESS_CHANNELSTAFF_RelationShip.CustomerID
-                FROM      dbo.T_ESS_CHANNELSTAFF INNER JOIN
+            //string sql = @"SELECT   dbo.T_ESS_CHANNELSTAFF.FMOBILE, dbo.T_ESS_CHANNELSTAFF_RelationShip.CustomerID
+            //    FROM      dbo.T_ESS_CHANNELSTAFF INNER JOIN
+            //    dbo.T_ESS_CHANNELSTAFF_RelationShip ON 
+            //    dbo.T_ESS_CHANNELSTAFF.FID = dbo.T_ESS_CHANNELSTAFF_RelationShip.StaffID
+            //    WHERE   (dbo.T_ESS_CHANNELSTAFF.FID = :p1)";
+            string sql = @"SELECT   dbo.T_ESS_CHANNELSTAFF.FID, dbo.T_ESS_CHANNELSTAFF.KHNAME, dbo.T_ESS_CHANNELSTAFF.FMOBILE, 
+                dbo.T_ESS_CHANNELSTAFF_L.FJOB
+FROM      dbo.T_ESS_CHANNELSTAFF AS T_ESS_CHANNELSTAFF_1 INNER JOIN
                 dbo.T_ESS_CHANNELSTAFF_RelationShip ON 
-                dbo.T_ESS_CHANNELSTAFF.FID = dbo.T_ESS_CHANNELSTAFF_RelationShip.StaffID
-                WHERE   (dbo.T_ESS_CHANNELSTAFF.FID = :p1)";
+                T_ESS_CHANNELSTAFF_1.FID = dbo.T_ESS_CHANNELSTAFF_RelationShip.StaffID RIGHT OUTER JOIN
+                dbo.T_ESS_CHANNELSTAFF INNER JOIN
+                dbo.T_ESS_CHANNELSTAFF_L ON dbo.T_ESS_CHANNELSTAFF.FID = dbo.T_ESS_CHANNELSTAFF_L.FID ON 
+                dbo.T_ESS_CHANNELSTAFF_RelationShip.CustomerID = dbo.T_ESS_CHANNELSTAFF.FID
+WHERE   (dbo.T_ESS_CHANNELSTAFF.FID = :p1)";
             return session.CreateSQLQuery(sql)
-            .SetParameter("p1", fmobile)
+            .SetParameter("p1", FID)
            .SetResultTransformer(new AliasToEntityMapResultTransformer())
            .List<dynamic>();
         }
@@ -2634,17 +2696,77 @@ FROM      dbo.T_ESS_CHANNELSTAFF_Personnel INNER JOIN
            .List<dynamic>();
         }
 
-        public void permissions(long[] pers)
+        /// <summary>
+        /// 删除活跃的
+        /// </summary>
+        /// <param name="pers"></param>
+        /// <param name="userId"></param>
+        public void permissions(long[] pers,string userId)
         {
             foreach (var item in pers)
             {
                 ISession session = NHSessionProvider.GetCurrentSession();
-                string sql = @"DELETE FROM [dbo].[T_ESS_CHANNELSTAFF_Personnel]  WHERE fid = :p1";
+                string sql = @"DELETE FROM [dbo].[T_ESS_CHANNELSTAFF_Personnel]  WHERE fid = :p1 and userId = :p2";
                 session.CreateSQLQuery(sql)
                       .SetParameter("p1", item)
+                      .SetParameter("p2", userId)
                       .ExecuteUpdate();
             }
             
+        }
+
+
+        /// <summary>
+        /// 查询关联了的客服
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public async Task<IList<dynamic>> pc_GetKfgl(string id)
+        {
+            ISession session = NHSessionProvider.GetCurrentSession();
+            string sql = @"SELECT [id],[zfid],[ffid] FROM [DFISH_Online_Service].[dbo].[T_ESS_CHANNELSTAFF_KFgl] WHERE [zfid] =:p1";
+            return session.CreateSQLQuery(sql)
+            .SetParameter("p1", id)
+           .SetResultTransformer(new AliasToEntityMapResultTransformer())
+           .List<dynamic>();
+        }
+
+        public bool Getbl(string id, string fid)
+        {
+            ISession session = NHSessionProvider.GetCurrentSession();
+            string sql = @"SELECT [id],[zfid],[ffid] FROM [DFISH_Online_Service].[dbo].[T_ESS_CHANNELSTAFF_KFgl] WHERE [zfid] =:p1 and [ffid]=:p2";
+            return  !(session.CreateSQLQuery(sql)
+            .SetParameter("p1", id)
+            .SetParameter("p2", fid)
+           .List<dynamic>().Count() > 0);
+        }
+
+        public IList<dynamic> permissions()
+        {
+            ISession session = NHSessionProvider.GetCurrentSession();
+            string sql = @"SELECT   khname, fid, fmobile, xcxopenid, ffid
+                    FROM      dbo.T_ESS_CHANNELSTAFF_Personnel";
+            return session.CreateSQLQuery(sql)
+          .SetResultTransformer(new AliasToEntityMapResultTransformer())
+          .List<dynamic>();
+        }
+
+        /// <summary>
+        /// 查询是否已经存在
+        /// </summary>
+        /// <returns></returns>
+        public bool blExistence(string fid, string ffid, string userId)
+        {
+            ISession session = NHSessionProvider.GetCurrentSession();
+            string sql = @"SELECT   TOP (200) khname, fid, fmobile, xcxopenid, ffid, userId
+            FROM      T_ESS_CHANNELSTAFF_Personnel
+            WHERE   (fid = :p1) AND (ffid = :p2) AND (userId= :p3)";
+            return session.CreateSQLQuery(sql)
+            .SetParameter("p1", fid)
+            .SetParameter("p2", ffid)
+            .SetParameter("p3", userId)
+            .SetResultTransformer(new AliasToEntityMapResultTransformer())
+          .List<dynamic>().Count() > 0;
         }
     }
 }

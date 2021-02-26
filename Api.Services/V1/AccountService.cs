@@ -84,6 +84,7 @@ namespace Api.Services.V1
                         channelName = "系统管理员",
                         roleId = -1,
                         channelId = -1,
+                        XCXOPENID = "-1",
                         auth = AuthorityService.GenerateVueMenu(0, true)
                     };
                     //生成keyStr

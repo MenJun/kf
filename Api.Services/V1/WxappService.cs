@@ -3343,24 +3343,79 @@ namespace Api.Services.V1
         /// pc用户列表
         /// </summary>
         /// <returns></returns>
-        public async Task<Response> pc_QueryCustomers()
+        public async Task<Response> pc_QueryCustomers(string XCXOpenId)
         {
-            var result = WxappDao.pc_QueryCustomers();
+            var result = WxappDao.pc_QueryCustomers(XCXOpenId);
 
+            //foreach (var item in result)
+            //{
+            //    var openid = (string)item["XCXOPENID"];
+            //    var count = RedisHelper.StringGet(openid);
+            //    item["count"] = count == "0" ? "" : count;
+            //    item["diffMinutes"] = DateTime.Now.Subtract(TimeStampHelper.FromTimeStamp((long)item["createtime"]).AddHours(-8)).TotalMinutes;
+            //}
             foreach (var item in result)
             {
                 var openid = (string)item["XCXOPENID"];
                 var count = RedisHelper.StringGet(openid);
                 item["count"] = count == "0" ? "" : count;
-                item["diffMinutes"] = DateTime.Now.Subtract(TimeStampHelper.FromTimeStamp((long)item["createtime"]).AddHours(-8)).TotalMinutes;
+                item["diffMinutes"] = DateTime.Now.Subtract(TimeStampHelper.FromTimeStamp((long)item["CreateTime"]).AddHours(-8)).TotalMinutes;
+                if (item["KHNAME"] == null)
+                {
+                    var userName = WxappDao.ZXKH_GroupName(item["XCXOPENID"]);  //定义群组下面成员的名称
+                    for (int i = 0; i < userName.Count; i++)   //如果群组名称没有则用成员拼凑
+                    {
+                        if (i == 0)
+                        {
+                            item["KHNAME"] = userName[i];
+                        }
+                        else
+                        {
+                            item["KHNAME"] += "、" + userName[i];
+                            if (i > 1)
+                            {
+                                item["KHNAME"] += "...";
+                                break;
+                            }
+                        }
+                    }
+                }
+                string num = (string)item["XCXOPENID"];
+                if (num.Length ==28)
+                {
+                    var results = WxappDao.pc_ZXKH_QueryMyCustomerFid(item["FID"])[0];
+                    var name = (string)results["FJOB"];
+                    switch (name)
+                    {
+                        case "客户": item["identity"] = "客户"; break;
+                        case "客服": item["identity"] = "客服"; break;
+                        default: break;
+                    }
+                }
+                
+                //var result = WxappDao.ZXKH_QueryMyCustomerFid(fmobile);
+                //foreach (var item1 in result)
+                //{
+                //    if (item1["CustomerID"] == item["FID"])
+                //    {
+                //        item["identity"] = "客户";
+                //    }
+                //}
+
+                //var staff = WxappDao.ZXKH_QueryMyStaffFid(fmobile);
+                //foreach (var item2 in staff)
+                //{
+                //    if (item2["StaffID"] == item["FID"])
+                //    {
+                //        item["identity"] = "客服";
+                //    }
+                //}
             }
-
-            //result = result.Where(x => x["diffMinutes"] <= 48 * 60).ToList();
-
             return new Response
             {
                 Result = result
             };
+
         }
         public async Task<Response> pc_ZXKH_ALLGroupList()
         {
@@ -3686,14 +3741,13 @@ namespace Api.Services.V1
         {
             if (userId == "-1")
             {
-                var result = WxappDao.ZXKH_QueryCustomers();
-                foreach (var item in result)
+                var results = WxappDao.pc_ZXKH_QueryCustomers(userId);
+                foreach (var item in results)
                 {
                     var openid = (string)item["XCXOPENID"];
                     var count = RedisHelper.StringGet(openid);
                     item["count"] = count == "0" ? "" : count;
                     item["diffMinutes"] = DateTime.Now.Subtract(TimeStampHelper.FromTimeStamp((long)item["CreateTime"]).AddHours(-8)).TotalMinutes;
-
                     if (item["KHNAME"] == null)
                     {
                         var userName = WxappDao.ZXKH_GroupName(item["XCXOPENID"]);  //定义群组下面成员的名称
@@ -3714,32 +3768,191 @@ namespace Api.Services.V1
                             }
                         }
                     }
+                    string num = (string)item["XCXOPENID"];
+                    if (num.Length == 28)
+                    {
+                        var result = WxappDao.pc_ZXKH_QueryMyCustomerFid(item["FID"])[0];
+                        var name = (string)result["FJOB"];
+                        switch (name)
+                        {
+                            case "客户": item["identity"] = "客户"; break;
+                            case "客服": item["identity"] = "客服"; break;
+                            default: break;
+                        }
+                    }
                 }
-                return new Response
-                {
-                    Result = result
-                };
+                    return new Response
+                    {
+                        Result = results
+                    };
             }
             else
             {
-                return await ZXKH_QueryCustomers(WxappDao.GetTel(userId)); 
+                //ZXKH_QueryCustomers(WxappDao.GetTel(userId));
+                var results = WxappDao.pc_ZXKH_QueryCustomers(userId);
+                foreach (var item in results)
+                {
+                    var openid = (string)item["XCXOPENID"];
+                    var count = RedisHelper.StringGet(openid);
+                    item["count"] = count == "0" ? "" : count;
+                    item["diffMinutes"] = DateTime.Now.Subtract(TimeStampHelper.FromTimeStamp((long)item["CreateTime"]).AddHours(-8)).TotalMinutes;
+                    if (item["KHNAME"] == null)
+                    {
+                        var userName = WxappDao.ZXKH_GroupName(item["XCXOPENID"]);  //定义群组下面成员的名称
+                        for (int i = 0; i < userName.Count; i++)   //如果群组名称没有则用成员拼凑
+                        {
+                            if (i == 0)
+                            {
+                                item["KHNAME"] = userName[i];
+                            }
+                            else
+                            {
+                                item["KHNAME"] += "、" + userName[i];
+                                if (i > 1)
+                                {
+                                    item["KHNAME"] += "...";
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    string num = (string)item["XCXOPENID"];
+                    if (num.Length == 28)
+                    {
+                        var result = WxappDao.pc_ZXKH_QueryMyCustomerFid(item["FID"])[0];
+                        var name = (string)result["FJOB"];
+                        switch (name)
+                        {
+                            case "客户": item["identity"] = "客户"; break;
+                            case "客服": item["identity"] = "客服"; break;
+                            default: break;
+                        }
+                    }
+
+                    //foreach (var item1 in result)
+                    //{
+                    //    if (item1["CustomerID"] == item["FID"])
+                    //    {
+                    //        item["identity"] = "客户";
+                    //    }
+                    //}
+
+                    //var staff = WxappDao.pc_ZXKH_QueryMyStaffFid(item["FID"]);
+                    //foreach (var item2 in staff)
+                    //{
+                    //    if (item2["StaffID"] == item["FID"])
+                    //    {
+                    //        item["identity"] = "客服";
+                    //    }
+                    //}
+                }
+                return new Response
+                {
+                    Result = results
+                };
             }
-            
+
         }
 
-        public Response pc_GetKfSelect(string id)
+        public async Task<Response> pc_GetKfSelect(string id)
         {
+            var user = WxappDao.pc_GetKfSelect(id); //显示的数据
+            var result = await WxappDao.pc_GetKfgl(id);
+            foreach (var val in user)
+            {
+                foreach (var item in result)
+                {
+                    if (item["ffid"] == val["FID"])
+                    {
+                        val["_checked"] = true;
+                    }  
+                }
+            }
             return new Response
             {
-                 Result = WxappDao.pc_GetKfSelect(id)
+                Result = user
             };
         }
         public Response kfRelation(string id, string fid)
         {
-            WxappDao.kfRelation(id, fid);
+            if (WxappDao.Getbl(id, fid))
+            {
+                WxappDao.kfRelation(id, fid);
+            }
+           
             return new Response
             {
-                 Result = 1
+                Result = 1
+            };
+        }
+
+        public Hashtable Management(string id)
+        {
+            var results = WxappDao.Management(id);
+
+            IList<Managements> listTestinfo = new List<Managements>();
+
+            foreach (var item in results)
+            {
+
+                Managements testinfo = new Managements();
+                testinfo.khname = item["KHNAME"];
+                testinfo.fmobile = item["FMOBILE"];
+                testinfo.fid = item["FID"];
+                //testinfo.zfid = item["zfid"];
+                testinfo.xcxopenid = item["XCXOPENID"];
+                testinfo.fwxopenid = item["FWXOPENID"];
+
+
+                var result = WxappDao.Managements(item["FMOBILE"]);
+                List<sonXMText> listSonText = new List<sonXMText>();
+                foreach (var itemS in result)
+                {
+                    sonXMText sontext1 = new sonXMText();
+                    sontext1.khname = itemS["KHNAME"];
+                    sontext1.fmobile = itemS["FMOBILE"];
+                    sontext1.fid = itemS["FID"];
+                    sontext1.ffid = testinfo.fid;
+                    sontext1.PICTURE = itemS["PICTURE"];
+                    sontext1.xcxopenid = itemS["XCXOPENID"];
+                    sontext1.fwxopenid = itemS["FWXOPENID"];
+                    listSonText.Add(sontext1);
+                }
+
+                testinfo.sonXMText = listSonText;
+                listTestinfo.Add(testinfo);
+            }
+
+            //查询已经关联的客服
+            var per =  WxappDao.permissions();
+            Hashtable table = new Hashtable
+            {
+               // { "count", 0 },
+                { "Result", listTestinfo },
+                { "per", per }
+            };
+
+            return table;
+        }
+
+        public Response permissions(string khname, string fid, string fmobile, string xcxopenid, string ffid,string userId)
+        {
+            if (!WxappDao.blExistence(fid, ffid, userId))
+            {
+                WxappDao.permissions(khname, fid, fmobile, xcxopenid, ffid, userId);
+            }
+            return new Response
+            {
+                Result = 1
+            };
+        }
+
+        public Response DelSurplus(long[] pers, string userId)
+        {
+            WxappDao.permissions(pers,userId);
+            return new Response
+            {
+                Result = 1
             };
         }
     }
